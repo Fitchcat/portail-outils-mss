@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portail - My Sport Business</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        
+        /* Custom scrollbar for the admin panel */
+        .admin-scroll::-webkit-scrollbar { width: 6px; }
+        .admin-scroll::-webkit-scrollbar-track { background: transparent; }
+        .admin-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .link-button {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .link-button:hover {
+            transform: scale(1.03);
+        }
+    </style>
+</head>
+<body x-data="linktreeApp()" class="min-h-screen relative transition-colors duration-300" :style="`background-color: ${settings.bgColor}; color: ${settings.textColor}`">
+
+    <!-- Bouton flottant pour ouvrir l'admin -->
+    <button @click="editMode = !editMode" 
+            class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white p-4 rounded-full shadow-2xl hover:bg-slate-800 transition-transform hover:scale-110 flex items-center gap-2 group">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+        <span class="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold" x-text="editMode ? 'Fermer' : 'Éditer la page'"></span>
+    </button>
+
+    <!-- Layout principal : Split screen si editMode est true -->
+    <div class="flex h-screen w-full overflow-hidden">
+        
+        <!-- Panneau d'administration (Gauche) -->
+        <div x-show="editMode" 
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="-translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="-translate-x-full"
+             class="w-full md:w-96 bg-white text-slate-800 shadow-2xl z-40 h-full flex flex-col absolute md:relative border-r border-slate-200">
+            
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+                <h2 class="text-xl font-bold text-slate-900">Paramètres</h2>
+                <button @click="resetDefaults" class="text-xs text-red-600 font-semibold hover:bg-red-50 px-2 py-1 rounded">Réinitialiser</button>
+            </div>
+
+            <div class="p-6 overflow-y-auto admin-scroll flex-1 space-y-8">
+                
+                <!-- Section Design -->
+                <section class="space-y-4">
+                    <h3 class="font-bold text-slate-400 uppercase text-xs tracking-wider border-b pb-2">1. Design & Couleurs</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 text-slate-600">Fond de la page</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" x-model="settings.bgColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+                                <input type="text" x-model="settings.bgColor" @input="saveState" class="w-full text-xs p-1.5 border rounded">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 text-slate-600">Texte principal</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" x-model="settings.textColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+                                <input type="text" x-model="settings.textColor" @input="saveState" class="w-full text-xs p-1.5 border rounded">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 text-slate-600">Fond des boutons</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" x-model="settings.buttonBgColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+                                <input type="text" x-model="settings.buttonBgColor" @input="saveState" class="w-full text-xs p-1.5 border rounded">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 text-slate-600">Texte des boutons</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" x-model="settings.buttonTextColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+                                <input type="text" x-model="settings.buttonTextColor" @input="saveState" class="w-full text-xs p-1.5 border rounded">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section Profil -->
+                <section class="space-y-4">
+                    <h3 class="font-bold text-slate-400 uppercase text-xs tracking-wider border-b pb-2">2. Profil</h3>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600">Logo / Photo de profil</label>
+                        <div class="space-y-2">
+                            <input type="file" accept="image/*" @change="handleImageUpload" class="block w-full text-xs text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+                            <div class="text-[10px] text-center text-slate-400 font-bold uppercase">ou</div>
+                            <input type="text" x-model="settings.logoUrl" @input="saveState" placeholder="Coller un lien (https://...)" class="w-full text-sm p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600">Titre</label>
+                        <input type="text" x-model="settings.title" @input="saveState" class="w-full text-sm p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600">Description</label>
+                        <textarea x-model="settings.description" @input="saveState" rows="3" class="w-full text-sm p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
+                    </div>
+                </section>
+
+                <!-- Section Liens -->
+                <section class="space-y-4">
+                    <h3 class="font-bold text-slate-400 uppercase text-xs tracking-wider border-b pb-2 flex justify-between items-center">
+                        3. Boutons & Liens
+                        <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[10px]" x-text="links.length"></span>
+                    </h3>
+                    
+                    <div class="space-y-3" x-ref="linksList">
+                        <template x-for="(link, index) in links" :key="link.id">
+                            <div class="bg-slate-50 border border-slate-200 p-3 rounded-lg relative group">
+                                <div class="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-50 rounded pl-2 pb-1">
+                                    <button @click="moveLinkUp(index)" x-show="index > 0" class="p-1 text-slate-400 hover:text-blue-500 transition-colors" title="Monter" type="button">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+                                    </button>
+                                    <button @click="moveLinkDown(index)" x-show="index < links.length - 1" class="p-1 text-slate-400 hover:text-blue-500 transition-colors" title="Descendre" type="button">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </button>
+                                    <button @click="removeLink(index)" class="p-1 text-slate-400 hover:text-red-500 transition-colors" title="Supprimer" type="button">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    </button>
+                                </div>
+                                
+                                <div class="grid grid-cols-12 gap-2 mb-2">
+                                    <div class="col-span-3">
+                                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">Emoji</label>
+                                        <input type="text" x-model="link.emoji" @input="saveState" placeholder="🚀" class="w-full text-center text-sm p-1.5 border rounded outline-none focus:border-blue-500">
+                                    </div>
+                                    <div class="col-span-9">
+                                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">Titre du bouton</label>
+                                        <input type="text" x-model="link.title" @input="saveState" class="w-full text-sm p-1.5 border rounded outline-none focus:border-blue-500 font-semibold">
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="block text-[10px] font-semibold text-slate-500 mb-1">Sous-titre (Optionnel)</label>
+                                    <input type="text" x-model="link.subtitle" @input="saveState" placeholder="Ex: 16 rue Samuel..." class="w-full text-xs p-1.5 border rounded outline-none focus:border-blue-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-semibold text-slate-500 mb-1">URL (Lien)</label>
+                                    <input type="url" x-model="link.url" @input="saveState" placeholder="https://..." class="w-full text-xs p-1.5 border rounded outline-none focus:border-blue-500 text-blue-600">
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <button @click="addLink" class="w-full py-2.5 border-2 border-dashed border-slate-300 text-slate-500 rounded-lg hover:bg-slate-50 hover:text-slate-700 transition-colors flex items-center justify-center gap-2 font-semibold text-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        Ajouter un nouveau lien
+                    </button>
+                </section>
+
+                <div class="pb-12"></div> <!-- Espace pour le bouton flottant -->
+            </div>
+        </div>
+
+        <!-- Preview (Droite / Centre) -->
+        <div class="flex-1 h-full overflow-y-auto relative w-full">
+            <div class="max-w-[480px] mx-auto px-4 py-12 md:py-20 flex flex-col items-center min-h-full">
+                
+                <!-- En-tête Profil -->
+                <div class="text-center mb-10 w-full">
+                    <div class="w-24 h-24 md:w-28 md:h-28 mx-auto mb-4 rounded-full overflow-hidden border-4 shadow-lg" :style="`border-color: ${settings.buttonBgColor}`">
+                        <img :src="settings.logoUrl || 'https://via.placeholder.com/150?text=Logo'" alt="Logo" class="w-full h-full object-cover">
+                    </div>
+                    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight mb-3" x-text="settings.title || 'Mon Titre'"></h1>
+                    <p class="text-sm md:text-base font-medium opacity-90 leading-relaxed px-4" x-html="formatDescription(settings.description)"></p>
+                </div>
+
+                <!-- Liste des boutons -->
+                <div class="w-full space-y-4">
+                    <template x-for="link in links" :key="link.id">
+                        <a :href="link.url" target="_blank" rel="noopener noreferrer" 
+                           class="link-button group w-full flex items-center p-4 rounded-2xl shadow-sm relative overflow-hidden"
+                           :style="`background-color: ${settings.buttonBgColor}; color: ${settings.buttonTextColor}`">
+                            
+                            <!-- Icon/Emoji -->
+                            <div class="w-10 flex-shrink-0 text-2xl flex justify-center" x-text="link.emoji"></div>
+                            
+                            <!-- Text content -->
+                            <div class="flex-1 text-center pr-10">
+                                <h3 class="font-bold text-base md:text-lg" x-text="link.title"></h3>
+                                <p x-show="link.subtitle" class="text-xs md:text-sm mt-0.5 opacity-80" x-text="link.subtitle"></p>
+                            </div>
+
+                            <!-- Arrow icon -->
+                            <div class="absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-1">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </div>
+                        </a>
+                    </template>
+                </div>
+
+                <!-- Footer branding -->
+                <div class="mt-16 text-center opacity-70">
+                    <a href="#" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-sm font-semibold backdrop-blur-sm">
+                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
+                        Créé avec My Sport Business
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const defaultState = {
+            settings: {
+                bgColor: '#5b7065',
+                textColor: '#ffffff',
+                buttonBgColor: '#ffffff',
+                buttonTextColor: '#5b7065',
+                logoUrl: 'https://i.ibb.co/3s7s6qM/logo-mss.png', // Exemple de logo générique ou place holder
+                title: 'My Sport Business Tools',
+                description: 'Tous les outils développés pour booster l\'acquisition de nos clients. 🚀\nSélectionnez un outil ci-dessous.',
+            },
+            links: [
+                { id: 1, emoji: '📊', title: 'Simulateur de Capacité & CA', subtitle: 'Pour anticiper le scaling', url: 'simulateur_capacite.html' },
+                { id: 2, emoji: '🎯', title: 'Audit Marketing Interactif', subtitle: 'Générer des leads qualifiés', url: '#' },
+                { id: 3, emoji: '⚡', title: 'Landing Page Dynamique', subtitle: 'Test de conversion', url: 'https://landingcarpathdynamique.netlify.app' },
+                { id: 4, emoji: '📱', title: 'Outil de collecte d\'avis Google', subtitle: 'Scannez le QR Code', url: '#' }
+            ]
+        };
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('linktreeApp', () => ({
+                editMode: false,
+                settings: JSON.parse(JSON.stringify(defaultState.settings)),
+                links: JSON.parse(JSON.stringify(defaultState.links)),
+                nextId: 100,
+
+                init() {
+                    this.loadState();
+                    // Permet d'ouvrir directement l'éditeur s'il n'y a pas de lien
+                    if(this.links.length === 0) this.editMode = true;
+                },
+
+                formatDescription(text) {
+                    if(!text) return '';
+                    return text.replace(/\n/g, '<br>');
+                },
+
+                handleImageUpload(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        if (file.size > 2 * 1024 * 1024) { 
+                            alert("L'image est trop lourde (limite 2Mo pour le stockage local). Veuillez choisir une image plus légère.");
+                            return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            this.settings.logoUrl = e.target.result;
+                            this.saveState();
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                },
+
+                addLink() {
+                    this.nextId++;
+                    this.links.push({
+                        id: this.nextId,
+                        emoji: '🔗',
+                        title: 'Nouveau lien',
+                        subtitle: '',
+                        url: 'https://'
+                    });
+                    this.saveState();
+                    // Scroll to bottom of admin panel smoothly
+                    setTimeout(() => {
+                        const list = this.$refs.linksList;
+                        if(list) list.parentElement.scrollTop = list.parentElement.scrollHeight;
+                    }, 50);
+                },
+
+                removeLink(index) {
+                    if(confirm("Supprimer ce lien ?")) {
+                        this.links.splice(index, 1);
+                        this.saveState();
+                    }
+                },
+
+                moveLinkUp(index) {
+                    if (index > 0) {
+                        const temp = this.links[index];
+                        this.links[index] = this.links[index - 1];
+                        this.links[index - 1] = temp;
+                        this.saveState();
+                    }
+                },
+
+                moveLinkDown(index) {
+                    if (index < this.links.length - 1) {
+                        const temp = this.links[index];
+                        this.links[index] = this.links[index + 1];
+                        this.links[index + 1] = temp;
+                        this.saveState();
+                    }
+                },
+
+                saveState() {
+                    const state = {
+                        settings: this.settings,
+                        links: this.links
+                    };
+                    localStorage.setItem('mssLinktreeState', JSON.stringify(state));
+                },
+
+                loadState() {
+                    const saved = localStorage.getItem('mssLinktreeState');
+                    if (saved) {
+                        try {
+                            const parsed = JSON.parse(saved);
+                            this.settings = { ...this.settings, ...parsed.settings };
+                            this.links = parsed.links || this.links;
+                        } catch (e) {
+                            console.error("Erreur de chargement", e);
+                        }
+                    }
+                },
+
+                resetDefaults() {
+                    if(confirm("Attention : Cela effacera tous vos liens et réglages personnalisés. Continuer ?")) {
+                        localStorage.removeItem('mssLinktreeState');
+                        this.settings = JSON.parse(JSON.stringify(defaultState.settings));
+                        this.links = JSON.parse(JSON.stringify(defaultState.links));
+                    }
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

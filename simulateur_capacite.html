@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur de Croissance & C.A - My Sport Business</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        input[type="number"]::-webkit-inner-spin-button, 
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="p-4 md:p-8 text-slate-800" x-data="growthSimulator()">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+        
+        <header class="text-center space-y-2 mb-8">
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Simulateur de Capacité & Chiffre d'Affaires</h1>
+            <p class="text-slate-500">Visualisez la rentabilité de votre modèle et vos goulots d'étranglement capacitaires.</p>
+            <p class="text-xs text-emerald-600 font-bold bg-emerald-50 inline-block px-3 py-1 rounded-full mt-2 border border-emerald-200">Session sauvegardée automatiquement</p>
+        </header>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+            
+            <!-- Colonne Paramètres (Gauche) -->
+            <div class="xl:col-span-4 space-y-6">
+                
+                <!-- Hypothèses Business -->
+                <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-lg font-bold mb-4 text-slate-800 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                        Variables Globales
+                    </h2>
+                    
+                    <div class="space-y-4">
+                        <!-- Modèle Économique -->
+                        <div class="p-3 bg-amber-50 rounded-lg border border-amber-100 mb-4">
+                            <h3 class="text-xs font-bold text-amber-800 uppercase mb-3">Modèle Financier</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Frais de Setup (€)</label>
+                                    <input type="number" x-model.number="inputs.setupFee" @input="updateChart" class="w-full px-2 py-1.5 text-sm border border-slate-200 rounded focus:ring-2 focus:ring-amber-400 outline-none font-bold text-amber-700">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-700 mb-1">Mensualité (€)</label>
+                                    <input type="number" x-model.number="inputs.monthlyFee" @input="updateChart" class="w-full px-2 py-1.5 text-sm border border-slate-200 rounded focus:ring-2 focus:ring-amber-400 outline-none font-bold text-amber-700">
+                                </div>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-slate-500 mb-2 font-bold uppercase">Valeurs par défaut (Acquisition)</p>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Nouveaux clients par mois</label>
+                            <div class="flex items-center gap-3">
+                                <input type="range" x-model.number="inputs.defaultAcquisition" min="0" max="10" class="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer">
+                                <span class="font-bold text-blue-600 w-8 text-right" x-text="inputs.defaultAcquisition"></span>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Prospection & Interne (h/mois)</label>
+                            <input type="number" x-model.number="inputs.defaultProsp" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none">
+                        </div>
+                        
+                        <div class="flex gap-2">
+                            <button @click="applyDefaults" class="flex-1 py-2 bg-slate-800 text-white rounded-lg font-semibold text-sm hover:bg-slate-700 transition-colors">
+                                Réinitialiser le tableau
+                            </button>
+                            <button @click="resetToFactory" class="px-3 py-2 bg-red-100 text-red-600 rounded-lg font-semibold text-sm hover:bg-red-200 transition-colors" title="Remettre à zéro (effacer la sauvegarde)">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+
+                        <div class="pt-4 border-t border-slate-100 grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Capacité (h/mois)</label>
+                                <input type="number" x-model.number="inputs.maxHours" @input="updateChart" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-slate-700 mb-1">Projection (mois)</label>
+                                <input type="number" x-model.number="inputs.projectionMonths" @input="generateTimeline" min="3" max="24" class="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-slate-500 outline-none">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tâches d'onboarding -->
+                <div class="bg-blue-50/50 p-5 rounded-xl shadow-sm border border-blue-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-blue-900">Temps Onboarding</h2>
+                        <span class="text-sm font-bold bg-blue-100 text-blue-700 px-2 py-1 rounded" x-text="setupTotalUnit + ' h / nv client'"></span>
+                    </div>
+                    
+                    <div class="space-y-2 max-h-[200px] overflow-y-auto pr-2 mb-3">
+                        <template x-for="(task, index) in setupTasks" :key="task.id">
+                            <div class="flex items-center gap-2 bg-white p-2 rounded border border-blue-100 group">
+                                <button @click="removeTask('setup', index)" class="text-slate-300 hover:text-red-500 transition-colors" title="Supprimer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                                <input type="text" x-model="task.name" @input="saveState" class="flex-1 min-w-0 text-sm font-medium text-slate-600 bg-transparent outline-none focus:border-b border-blue-400">
+                                <div class="flex items-center w-24 shrink-0">
+                                    <input type="number" step="0.25" min="0" x-model.number="task.hours" @input="updateChart" class="w-16 text-right px-2 py-1 border border-slate-200 rounded outline-none focus:ring-1 focus:ring-blue-400 text-sm font-bold text-blue-700">
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <button @click="addTask('setup')" class="w-full py-2 border-2 border-dashed border-blue-200 rounded-lg text-blue-600 font-semibold text-sm hover:bg-blue-100 transition-colors flex items-center justify-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> Ajouter
+                    </button>
+                </div>
+
+                <!-- Tâches récurrentes -->
+                <div class="bg-emerald-50/50 p-5 rounded-xl shadow-sm border border-emerald-200">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-lg font-bold text-emerald-900">Temps Run (Mensuel)</h2>
+                        <span class="text-sm font-bold bg-emerald-100 text-emerald-700 px-2 py-1 rounded" x-text="runTotalUnit + ' h / anc. client'"></span>
+                    </div>
+                    
+                    <div class="space-y-2 max-h-[200px] overflow-y-auto pr-2 mb-3">
+                        <template x-for="(task, index) in runTasks" :key="task.id">
+                            <div class="flex items-center gap-2 bg-white p-2 rounded border border-emerald-100 group">
+                                <button @click="removeTask('run', index)" class="text-slate-300 hover:text-red-500 transition-colors" title="Supprimer">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
+                                <input type="text" x-model="task.name" @input="saveState" class="flex-1 min-w-0 text-sm font-medium text-slate-600 bg-transparent outline-none focus:border-b border-emerald-400">
+                                <div class="flex items-center w-24 shrink-0">
+                                    <input type="number" step="0.25" min="0" x-model.number="task.hours" @input="updateChart" class="w-16 text-right px-2 py-1 border border-slate-200 rounded outline-none focus:ring-1 focus:ring-emerald-400 text-sm font-bold text-emerald-700">
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <button @click="addTask('run')" class="w-full py-2 border-2 border-dashed border-emerald-200 rounded-lg text-emerald-600 font-semibold text-sm hover:bg-emerald-100 transition-colors flex items-center justify-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg> Ajouter
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Colonne Résultats (Droite) -->
+            <div class="xl:col-span-8 space-y-6">
+                
+                <!-- Double Graphique -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Graphique Capacité -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-800">Projection Capacité</h2>
+                                <p class="text-xs text-slate-500">Heures de travail / mois</p>
+                            </div>
+                            <div x-show="saturationMonth !== null" class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-bold animate-pulse">
+                                Surcharge Mois <span x-text="saturationMonth"></span>
+                            </div>
+                        </div>
+                        <div class="relative flex-1 w-full min-h-[240px]"><canvas id="growthChart"></canvas></div>
+                    </div>
+
+                    <!-- Graphique Revenus -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-800">Projection Chiffre d'Affaires</h2>
+                                <p class="text-xs text-slate-500">C.A Mensuel Cumulé (€ HT)</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-xs font-semibold text-slate-500">Total Cumulé (<span x-text="inputs.projectionMonths"></span> mois)</p>
+                                <p class="text-2xl font-black text-amber-600" x-text="formatCurrency(grandTotalCA)"></p>
+                            </div>
+                        </div>
+                        <div class="relative flex-1 w-full min-h-[240px]"><canvas id="revenueChart"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Tableau analytique interactif -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+                        <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                            Ajustement Mensuel & Résultats
+                        </h3>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400 font-bold block">Capacité: <span x-text="inputs.maxHours"></span>h</span>
+                            <span class="text-xs text-amber-600 font-bold block mt-1" x-text="'C.A Fin de période : ' + formatCurrency(finalMonthCA) + '/mois'"></span>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto max-h-[400px]">
+                        <table class="w-full text-left border-collapse relative">
+                            <thead class="sticky top-0 bg-slate-50 z-10 shadow-sm">
+                                <tr class="text-slate-500 text-[11px] uppercase tracking-wider">
+                                    <th class="px-3 py-3 font-semibold border-b">Mois</th>
+                                    <th class="px-3 py-3 font-semibold border-b text-center text-blue-600 bg-blue-50/50">Nouveaux<br>(Onboard)</th>
+                                    <th class="px-3 py-3 font-semibold border-b text-center text-emerald-600">Actifs<br>(Total)</th>
+                                    <th class="px-3 py-3 font-semibold border-b text-right text-purple-600 bg-purple-50/50">Prosp.<br>(H)</th>
+                                    <th class="px-3 py-3 font-semibold border-b text-right">Temps<br>Setup</th>
+                                    <th class="px-3 py-3 font-semibold border-b text-right">Temps<br>Run</th>
+                                    <th class="px-3 py-3 font-semibold border-b text-right bg-slate-100 border-l border-slate-200">Total<br>Heures</th>
+                                    <th class="px-3 py-3 font-semibold border-b text-right text-amber-700 bg-amber-50">C.A<br>Mensuel</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 text-sm">
+                                <template x-for="(row, index) in timeline" :key="row.month">
+                                    <tr class="hover:bg-slate-50 transition-colors" :class="projectionData[index]?.totalHours > inputs.maxHours ? 'bg-red-50/30' : ''">
+                                        <td class="px-3 py-3 font-bold text-slate-700">Mois <span x-text="row.month"></span></td>
+                                        
+                                        <!-- Inputs modifiables -->
+                                        <td class="px-3 py-2 bg-blue-50/30">
+                                            <input type="number" min="0" x-model.number="row.newClients" @input="updateChart" class="w-14 text-center bg-white border border-blue-200 rounded px-1 py-1 text-blue-700 font-bold focus:ring-1 focus:ring-blue-500 outline-none mx-auto block">
+                                        </td>
+                                        
+                                        <!-- Clients actifs totaux du mois -->
+                                        <td class="px-3 py-3 text-center text-emerald-600 font-bold bg-emerald-50/20" x-text="projectionData[index]?.totalActiveClients"></td>
+                                        
+                                        <td class="px-3 py-2 bg-purple-50/30">
+                                            <input type="number" min="0" x-model.number="row.prospHours" @input="updateChart" class="w-14 text-right bg-white border border-purple-200 rounded px-1 py-1 text-purple-700 font-bold focus:ring-1 focus:ring-purple-500 outline-none ml-auto block">
+                                        </td>
+                                        
+                                        <!-- Affichage des calculs -->
+                                        <td class="px-3 py-3 text-right text-slate-600" x-text="projectionData[index]?.setupHours + 'h'"></td>
+                                        <td class="px-3 py-3 text-right text-slate-600" x-text="projectionData[index]?.runHours + 'h'"></td>
+                                        <td class="px-3 py-3 text-right font-black border-l border-slate-100" :class="projectionData[index]?.totalHours > inputs.maxHours ? 'text-red-600' : 'text-slate-800 bg-slate-50'" x-text="projectionData[index]?.totalHours + 'h'"></td>
+                                        
+                                        <!-- CA -->
+                                        <td class="px-3 py-3 text-right font-bold text-amber-700 bg-amber-50/50" x-text="formatCurrency(projectionData[index]?.totalCA)"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Valeurs par défaut pour reset
+        const defaultFactoryState = {
+            inputs: {
+                defaultAcquisition: 2,
+                defaultProsp: 8,
+                maxHours: 140,
+                projectionMonths: 12,
+                setupFee: 0,
+                monthlyFee: 390
+            },
+            setupTasks: [
+                { id: 1, name: "Réunion préliminaire", hours: 2 },
+                { id: 4, name: "Optimisation GBP", hours: 8 },
+                { id: 5, name: "Création Site Web", hours: 24 },
+                { id: 6, name: "Séquences & Automations", hours: 2.5 },
+                { id: 11, name: "Réunion de suivi", hours: 1.5 }
+            ],
+            runTasks: [
+                { id: 20, name: "Ads Meta (Trimestre)", hours: 3 },
+                { id: 21, name: "Landing Pages (Trimestre)", hours: 2 },
+                { id: 24, name: "Avis & Posts Réseaux", hours: 0.75 },
+                { id: 26, name: "Reporting & Suivi", hours: 1.5 }
+            ],
+            timeline: []
+        };
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('growthSimulator', () => ({
+                capacityChart: null,
+                revenueChart: null,
+                saturationMonth: null,
+                finalMonthCA: 0,
+                grandTotalCA: 0,
+                
+                timeline: [], 
+                projectionData: [], 
+
+                uniqueId: 100,
+
+                inputs: JSON.parse(JSON.stringify(defaultFactoryState.inputs)),
+                setupTasks: JSON.parse(JSON.stringify(defaultFactoryState.setupTasks)),
+                runTasks: JSON.parse(JSON.stringify(defaultFactoryState.runTasks)),
+
+                get setupTotalUnit() { return this.setupTasks.reduce((acc, t) => acc + (parseFloat(t.hours) || 0), 0); },
+                get runTotalUnit() { return this.runTasks.reduce((acc, t) => acc + (parseFloat(t.hours) || 0), 0); },
+
+                addTask(type) {
+                    this.uniqueId++;
+                    if(type === 'setup') {
+                        this.setupTasks.push({ id: this.uniqueId, name: "Nouvelle activité", hours: 0 });
+                    } else {
+                        this.runTasks.push({ id: this.uniqueId, name: "Nouvelle activité", hours: 0 });
+                    }
+                    this.updateChart();
+                },
+
+                removeTask(type, index) {
+                    if(type === 'setup') {
+                        this.setupTasks.splice(index, 1);
+                    } else {
+                        this.runTasks.splice(index, 1);
+                    }
+                    this.updateChart();
+                },
+
+                formatCurrency(value) {
+                    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(value || 0);
+                },
+
+                init() {
+                    this.loadState();
+                    if(this.timeline.length === 0) {
+                        this.generateTimeline();
+                    } else {
+                        this.generateTimeline(true); // Preserve existing data when adapting length
+                    }
+
+                    this.$watch('setupTasks', () => this.updateChart(), { deep: true });
+                    this.$watch('runTasks', () => this.updateChart(), { deep: true });
+                },
+
+                loadState() {
+                    const saved = localStorage.getItem('mssSimulatorState');
+                    if (saved) {
+                        try {
+                            const parsed = JSON.parse(saved);
+                            this.inputs = { ...this.inputs, ...parsed.inputs };
+                            this.setupTasks = parsed.setupTasks || this.setupTasks;
+                            this.runTasks = parsed.runTasks || this.runTasks;
+                            this.timeline = parsed.timeline || [];
+                        } catch (e) {
+                            console.error("Erreur de chargement des données", e);
+                        }
+                    }
+                },
+
+                saveState() {
+                    const state = {
+                        inputs: this.inputs,
+                        setupTasks: this.setupTasks,
+                        runTasks: this.runTasks,
+                        timeline: this.timeline
+                    };
+                    localStorage.setItem('mssSimulatorState', JSON.stringify(state));
+                },
+
+                resetToFactory() {
+                    if(confirm("Voulez-vous vraiment effacer toutes vos modifications et revenir aux valeurs par défaut ?")) {
+                        localStorage.removeItem('mssSimulatorState');
+                        this.inputs = JSON.parse(JSON.stringify(defaultFactoryState.inputs));
+                        this.setupTasks = JSON.parse(JSON.stringify(defaultFactoryState.setupTasks));
+                        this.runTasks = JSON.parse(JSON.stringify(defaultFactoryState.runTasks));
+                        this.timeline = [];
+                        this.generateTimeline();
+                    }
+                },
+
+                generateTimeline(preserve = false) {
+                    const currentLen = this.timeline.length;
+                    const targetLen = parseInt(this.inputs.projectionMonths) || 12;
+                    
+                    if (targetLen > currentLen) {
+                        for (let m = currentLen + 1; m <= targetLen; m++) {
+                            this.timeline.push({
+                                month: m,
+                                newClients: this.inputs.defaultAcquisition,
+                                prospHours: this.inputs.defaultProsp
+                            });
+                        }
+                    } else if (targetLen < currentLen) {
+                        this.timeline = this.timeline.slice(0, targetLen);
+                    }
+                    this.updateChart();
+                },
+
+                applyDefaults() {
+                    this.timeline.forEach(row => {
+                        row.newClients = this.inputs.defaultAcquisition;
+                        row.prospHours = this.inputs.defaultProsp;
+                    });
+                    this.updateChart();
+                },
+
+                updateChart() {
+                    this.projectionData = [];
+                    this.saturationMonth = null;
+                    this.finalMonthCA = 0;
+                    this.grandTotalCA = 0;
+                    
+                    let currentRunClients = 0; 
+                    
+                    const labels = [];
+                    const setupData = [];
+                    const runData = [];
+                    const prospData = [];
+                    const capacityData = [];
+                    const caSetupData = [];
+                    const caRunData = [];
+
+                    const setupFee = parseFloat(this.inputs.setupFee) || 0;
+                    const monthlyFee = parseFloat(this.inputs.monthlyFee) || 0;
+
+                    for (let i = 0; i < this.timeline.length; i++) {
+                        const row = this.timeline[i];
+                        const newClients = parseFloat(row.newClients) || 0;
+                        const prospHours = parseFloat(row.prospHours) || 0;
+                        
+                        let setupHours = newClients * this.setupTotalUnit;
+                        let runHours = currentRunClients * this.runTotalUnit;
+                        let totalHours = setupHours + runHours + prospHours;
+
+                        let caSetup = newClients * setupFee;
+                        let totalActiveClients = currentRunClients + newClients;
+                        let caRun = totalActiveClients * monthlyFee;
+                        let totalCA = caSetup + caRun;
+
+                        this.grandTotalCA += totalCA;
+
+                        this.projectionData.push({
+                            month: row.month,
+                            newClients: newClients,
+                            runClientsCount: currentRunClients,
+                            totalActiveClients: totalActiveClients,
+                            setupHours: setupHours,
+                            runHours: runHours,
+                            prospHours: prospHours,
+                            totalHours: totalHours,
+                            caSetup: caSetup,
+                            caRun: caRun,
+                            totalCA: totalCA
+                        });
+
+                        labels.push(`Mois ${row.month}`);
+                        
+                        setupData.push(setupHours);
+                        runData.push(runHours);
+                        prospData.push(prospHours);
+                        capacityData.push(this.inputs.maxHours);
+
+                        caSetupData.push(caSetup);
+                        caRunData.push(caRun);
+
+                        if (totalHours > this.inputs.maxHours && this.saturationMonth === null) {
+                            this.saturationMonth = row.month;
+                        }
+
+                        if (i === this.timeline.length - 1) {
+                            this.finalMonthCA = totalCA;
+                        }
+
+                        currentRunClients += newClients;
+                    }
+
+                    this.renderCapacityChart(labels, runData, setupData, prospData, capacityData);
+                    this.renderRevenueChart(labels, caRunData, caSetupData);
+                    this.saveState();
+                },
+
+                renderCapacityChart(labels, runData, setupData, prospData, capacityData) {
+                    if (this.capacityChart) this.capacityChart.destroy();
+                    const ctx = document.getElementById('growthChart').getContext('2d');
+                    this.capacityChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                { label: 'Run', data: runData, backgroundColor: 'rgba(16, 185, 129, 0.9)' },
+                                { label: 'Setup', data: setupData, backgroundColor: 'rgba(59, 130, 246, 0.9)' },
+                                { label: 'Prosp.', data: prospData, backgroundColor: 'rgba(168, 85, 247, 0.9)' },
+                                { label: 'Capacité Max', data: capacityData, type: 'line', borderColor: 'rgba(239, 68, 68, 1)', borderWidth: 2, borderDash: [5, 5], fill: false, pointRadius: 0 }
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            scales: { x: { stacked: true }, y: { stacked: true } },
+                            plugins: { tooltip: { mode: 'index', intersect: false } }
+                        }
+                    });
+                },
+
+                renderRevenueChart(labels, caRunData, caSetupData) {
+                    if (this.revenueChart) this.revenueChart.destroy();
+                    const ctx = document.getElementById('revenueChart').getContext('2d');
+                    this.revenueChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                { label: 'C.A Récurrent (Abonnements)', data: caRunData, backgroundColor: 'rgba(245, 158, 11, 0.9)' },
+                                { label: 'C.A One-off (Frais Setup)', data: caSetupData, backgroundColor: 'rgba(251, 191, 36, 0.9)' }
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            scales: { x: { stacked: true }, y: { stacked: true } },
+                            plugins: { 
+                                tooltip: { 
+                                    mode: 'index', intersect: false,
+                                    callbacks: { label: function(context) { return context.dataset.label + ': ' + context.parsed.y + ' €'; } }
+                                } 
+                            }
+                        }
+                    });
+                }
+            }));
+        });
+    </script>
+</body>
+</html>
