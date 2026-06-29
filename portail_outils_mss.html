@@ -3,210 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portail - My Sport Business</title>
+    <title>Portail My Sport Business</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
         
-        /* Custom scrollbar for the admin panel */
         .admin-scroll::-webkit-scrollbar { width: 6px; }
         .admin-scroll::-webkit-scrollbar-track { background: transparent; }
         .admin-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
         .link-button {
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
         }
         .link-button:hover {
-            transform: scale(1.03);
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-card {
+            transition: all 0.3s ease;
         }
     </style>
 </head>
-<body x-data="linktreeApp()" class="min-h-screen relative transition-colors duration-300" :style="`background-color: ${settings.bgColor}; color: ${settings.textColor}`">
+<body x-data="portalApp()" class="min-h-screen relative transition-colors duration-300" :style="`background-color: ${settings.bgColor}; color: ${settings.textColor}`">
 
-    <!-- Bouton flottant pour ouvrir l'admin -->
-    <button @click="editMode = !editMode" 
+    <!-- Bouton Admin Flottant -->
+    <button id="admin-floating-btn" @click="editMode = !editMode" 
             class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white p-4 rounded-full shadow-2xl hover:bg-slate-800 transition-transform hover:scale-110 flex items-center gap-2 group">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-        <span class="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold" x-text="editMode ? 'Fermer' : 'Éditer la page'"></span>
+        <i class="fas fa-cog text-xl"></i>
+        <span class="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold" x-text="editMode ? 'Fermer' : 'Éditer le portail'"></span>
     </button>
 
-    <!-- Layout principal : Split screen si editMode est true -->
     <div class="flex h-screen w-full overflow-hidden">
         
-        <!-- Panneau d'administration (Gauche) -->
-        <div x-show="editMode" 
+        <!-- Panneau d'administration -->
+        <div id="admin-panel" x-show="editMode" 
              x-transition:enter="transition ease-out duration-300 transform"
              x-transition:enter-start="-translate-x-full"
              x-transition:enter-end="translate-x-0"
              x-transition:leave="transition ease-in duration-200 transform"
              x-transition:leave-start="translate-x-0"
              x-transition:leave-end="-translate-x-full"
-             class="w-full md:w-96 bg-white text-slate-800 shadow-2xl z-40 h-full flex flex-col absolute md:relative border-r border-slate-200">
+             class="w-full md:w-[500px] bg-white text-slate-800 shadow-2xl z-40 h-full flex flex-col absolute md:relative border-r border-slate-200">
             
             <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
-                <h2 class="text-xl font-bold text-slate-900">Paramètres</h2>
+                <h2 class="text-xl font-bold text-slate-900">Éditeur de Portail</h2>
                 <button @click="resetDefaults" class="text-xs text-red-600 font-semibold hover:bg-red-50 px-2 py-1 rounded">Réinitialiser</button>
             </div>
 
             <div class="p-6 overflow-y-auto admin-scroll flex-1 space-y-8">
                 
-                <!-- Section Design -->
+                <!-- Layout & Grilles -->
                 <section class="space-y-4">
-                    <h3 class="font-bold text-slate-400 uppercase text-xs tracking-wider border-b pb-2">1. Design & Couleurs</h3>
+                    <h3 class="font-bold text-slate-400 uppercase text-xs tracking-wider border-b pb-2">1. Mise en page</h3>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold mb-1 text-slate-600">Fond de la page</label>
-                            <div class="flex items-center gap-2">
-                                <input type="color" x-model="settings.bgColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
-                                <input type="text" x-model="settings.bgColor" @input="saveState" class="w-full text-xs p-1.5 border rounded">
-                            </div>
+                            <label class="block text-xs font-semibold mb-1 text-slate-600">Colonnes (Catégories)</label>
+                            <select x-model="settings.categoryColumns" @change="saveState" class="w-full text-sm p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="1">1 Colonne</option>
+                                <option value="2">2 Colonnes</option>
+                                <option value="3">3 Colonnes</option>
+                                <option value="4">4 Colonnes</option>
+                                <option value="5">5 Colonnes</option>
+                                <option value="6">6 Colonnes</option>
+                            </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold mb-1 text-slate-600">Texte principal</label>
-                            <div class="flex items-center gap-2">
-                                <input type="color" x-model="settings.textColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
-                                <input type="text" x-model="settings.textColor" @input="saveState" class="w-full text-xs p-1.5 border rounded">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold mb-1 text-slate-600">Fond des boutons</label>
-                            <div class="flex items-center gap-2">
-                                <input type="color" x-model="settings.buttonBgColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
-                                <input type="text" x-model="settings.buttonBgColor" @input="saveState" class="w-full text-xs p-1.5 border rounded">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold mb-1 text-slate-600">Texte des boutons</label>
-                            <div class="flex items-center gap-2">
-                                <input type="color" x-model="settings.buttonTextColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
-                                <input type="text" x-model="settings.buttonTextColor" @input="saveState" class="w-full text-xs p-1.5 border rounded">
-                            </div>
+                            <label class="block text-xs font-semibold mb-1 text-slate-600">Colonnes (Outils)</label>
+                            <select x-model="settings.linkColumns" @change="saveState" class="w-full text-sm p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="1">1 Colonne</option>
+                                <option value="2">2 Colonnes</option>
+                                <option value="3">3 Colonnes</option>
+                                <option value="4">4 Colonnes</option>
+                                <option value="5">5 Colonnes</option>
+                                <option value="6">6 Colonnes</option>
+                            </select>
                         </div>
                     </div>
                 </section>
 
-                <!-- Section Profil -->
+                <!-- Design -->
                 <section class="space-y-4">
-                    <h3 class="font-bold text-slate-400 uppercase text-xs tracking-wider border-b pb-2">2. Profil</h3>
-                    <div>
-                        <label class="block text-xs font-semibold mb-1 text-slate-600">Logo / Photo de profil</label>
-                        <div class="space-y-2">
-                            <input type="file" accept="image/*" @change="handleImageUpload" class="block w-full text-xs text-slate-500 file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
-                            <div class="text-[10px] text-center text-slate-400 font-bold uppercase">ou</div>
-                            <input type="text" x-model="settings.logoUrl" @input="saveState" placeholder="Coller un lien (https://...)" class="w-full text-sm p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                    <h3 class="font-bold text-slate-400 uppercase text-xs tracking-wider border-b pb-2">2. Couleurs de Marque</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 text-slate-600">Fond page</label>
+                            <input type="color" x-model="settings.bgColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
                         </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 text-slate-600">Texte page</label>
+                            <input type="color" x-model="settings.textColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 text-slate-600">Fond boutons</label>
+                            <input type="color" x-model="settings.buttonBgColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 text-slate-600">Texte boutons</label>
+                            <input type="color" x-model="settings.buttonTextColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Header -->
+                <section class="space-y-4">
+                    <h3 class="font-bold text-slate-400 uppercase text-xs tracking-wider border-b pb-2">3. En-tête</h3>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600">URL du Logo</label>
+                        <input type="text" x-model="settings.logoUrl" @input="saveState" class="w-full text-sm p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600">Titre</label>
-                        <input type="text" x-model="settings.title" @input="saveState" class="w-full text-sm p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none font-bold">
+                        <input type="text" x-model="settings.title" @input="saveState" class="w-full text-sm p-2 border rounded font-bold">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1 text-slate-600">Description</label>
-                        <textarea x-model="settings.description" @input="saveState" rows="3" class="w-full text-sm p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none resize-none"></textarea>
+                        <textarea x-model="settings.description" @input="saveState" rows="2" class="w-full text-sm p-2 border rounded"></textarea>
                     </div>
                 </section>
 
-                <!-- Section Liens -->
-                <section class="space-y-4">
-                    <h3 class="font-bold text-slate-400 uppercase text-xs tracking-wider border-b pb-2 flex justify-between items-center">
-                        3. Boutons & Liens
-                        <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full text-[10px]" x-text="links.length"></span>
-                    </h3>
+                <!-- Sections & Liens -->
+                <section class="space-y-6">
+                    <h3 class="font-bold text-slate-400 uppercase text-xs tracking-wider border-b pb-2">4. Contenu du Portail (Boîtes & Liens)</h3>
                     
-                    <div class="space-y-3" x-ref="linksList">
-                        <template x-for="(link, index) in links" :key="link.id">
-                            <div class="bg-slate-50 border border-slate-200 p-3 rounded-lg relative group">
-                                <div class="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-50 rounded pl-2 pb-1">
-                                    <button @click="moveLinkUp(index)" x-show="index > 0" class="p-1 text-slate-400 hover:text-blue-500 transition-colors" title="Monter" type="button">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
-                                    </button>
-                                    <button @click="moveLinkDown(index)" x-show="index < links.length - 1" class="p-1 text-slate-400 hover:text-blue-500 transition-colors" title="Descendre" type="button">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                    </button>
-                                    <button @click="removeLink(index)" class="p-1 text-slate-400 hover:text-red-500 transition-colors" title="Supprimer" type="button">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                    </button>
-                                </div>
+                    <div class="space-y-6">
+                        <template x-for="(cat, catIndex) in categories" :key="cat.id">
+                            <div class="bg-slate-100 p-4 rounded-xl border border-slate-200">
                                 
-                                <div class="grid grid-cols-12 gap-2 mb-2">
-                                    <div class="col-span-3">
-                                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">Emoji</label>
-                                        <input type="text" x-model="link.emoji" @input="saveState" placeholder="🚀" class="w-full text-center text-sm p-1.5 border rounded outline-none focus:border-blue-500">
+                                <!-- Header Section (Catégorie) -->
+                                <div class="mb-4 space-y-2">
+                                    <div class="flex justify-between items-center">
+                                        <label class="block text-[10px] font-bold text-slate-500 uppercase">Boîte Catégorie</label>
+                                        <div class="flex gap-1">
+                                            <button @click="moveCategoryUp(catIndex)" x-show="catIndex > 0" class="text-slate-400 hover:text-blue-500" title="Monter"><i class="fas fa-arrow-up"></i></button>
+                                            <button @click="moveCategoryDown(catIndex)" x-show="catIndex < categories.length - 1" class="text-slate-400 hover:text-blue-500" title="Descendre"><i class="fas fa-arrow-down"></i></button>
+                                            <button @click="removeCategory(catIndex)" class="text-slate-400 hover:text-red-500 ml-2" title="Supprimer"><i class="fas fa-trash"></i></button>
+                                        </div>
                                     </div>
-                                    <div class="col-span-9">
-                                        <label class="block text-[10px] font-semibold text-slate-500 mb-1">Titre du bouton</label>
-                                        <input type="text" x-model="link.title" @input="saveState" class="w-full text-sm p-1.5 border rounded outline-none focus:border-blue-500 font-semibold">
+                                    <div class="grid grid-cols-12 gap-2">
+                                        <div class="col-span-5">
+                                            <select x-model="cat.icon" @change="saveState" class="w-full text-xs p-1.5 border rounded outline-none focus:border-blue-500">
+                                                <option value="fas fa-folder">Dossier</option>
+                                                <option value="fas fa-chart-pie">Camembert</option>
+                                                <option value="fas fa-search">Recherche</option>
+                                                <option value="fas fa-rocket">Fusée</option>
+                                                <option value="fas fa-cogs">Paramètres</option>
+                                                <option value="fas fa-graduation-cap">Diplôme</option>
+                                                <option value="fas fa-tools">Outils</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-span-2">
+                                            <input type="color" x-model="cat.iconColor" @input="saveState" class="w-full h-7 rounded cursor-pointer border-0 p-0">
+                                        </div>
+                                        <div class="col-span-5">
+                                            <input type="text" x-model="cat.title" @input="saveState" placeholder="Titre..." class="w-full text-xs p-1.5 border rounded outline-none focus:border-blue-500 font-bold">
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="mb-2">
-                                    <label class="block text-[10px] font-semibold text-slate-500 mb-1">Sous-titre (Optionnel)</label>
-                                    <input type="text" x-model="link.subtitle" @input="saveState" placeholder="Ex: 16 rue Samuel..." class="w-full text-xs p-1.5 border rounded outline-none focus:border-blue-500">
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-semibold text-slate-500 mb-1">URL (Lien)</label>
-                                    <input type="url" x-model="link.url" @input="saveState" placeholder="https://..." class="w-full text-xs p-1.5 border rounded outline-none focus:border-blue-500 text-blue-600">
+
+                                <!-- Liens de la section -->
+                                <div class="space-y-3 pl-4 border-l-2 border-slate-300">
+                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-2">Outils à l'intérieur de la boîte</label>
+                                    
+                                    <template x-for="(link, linkIndex) in cat.links" :key="link.id">
+                                        <div class="bg-white p-3 rounded-lg shadow-sm border border-slate-200 relative group">
+                                            <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white">
+                                                <button @click="moveLinkUp(catIndex, linkIndex)" x-show="linkIndex > 0" class="text-slate-400 hover:text-blue-500 text-xs p-1"><i class="fas fa-arrow-up"></i></button>
+                                                <button @click="moveLinkDown(catIndex, linkIndex)" x-show="linkIndex < cat.links.length - 1" class="text-slate-400 hover:text-blue-500 text-xs p-1"><i class="fas fa-arrow-down"></i></button>
+                                                <button @click="removeLink(catIndex, linkIndex)" class="text-slate-400 hover:text-red-500 text-xs p-1"><i class="fas fa-times"></i></button>
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-12 gap-2 mb-2">
+                                                <div class="col-span-5">
+                                                    <label class="block text-[10px] text-slate-500">Icône</label>
+                                                    <select x-model="link.icon" @change="saveState" class="w-full text-xs p-1.5 border rounded outline-none">
+                                                        <option value="fas fa-link">Lien</option>
+                                                        <option value="fas fa-chart-bar">Graphique</option>
+                                                        <option value="fas fa-chart-line">Courbe</option>
+                                                        <option value="fas fa-calculator">Calculatrice</option>
+                                                        <option value="fas fa-bullseye">Cible</option>
+                                                        <option value="fas fa-graduation-cap">Diplôme</option>
+                                                        <option value="fas fa-file-pdf">PDF</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-span-2">
+                                                    <label class="block text-[10px] text-slate-500">Couleur</label>
+                                                    <input type="color" x-model="link.iconColor" @input="saveState" class="w-full h-7 rounded cursor-pointer border-0 p-0">
+                                                </div>
+                                                <div class="col-span-5">
+                                                    <label class="block text-[10px] text-slate-500">Titre</label>
+                                                    <input type="text" x-model="link.title" @input="saveState" class="w-full text-xs p-1.5 border rounded font-semibold">
+                                                </div>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="block text-[10px] text-slate-500">URL</label>
+                                                <input type="text" x-model="link.url" @input="saveState" class="w-full text-xs p-1.5 border rounded text-blue-600">
+                                            </div>
+                                        </div>
+                                    </template>
+                                    
+                                    <button @click="addLink(catIndex)" class="w-full py-2 border-2 border-dashed border-slate-300 text-slate-500 rounded-lg hover:bg-white hover:text-blue-600 text-xs font-semibold">
+                                        + Ajouter un outil à cette boîte
+                                    </button>
                                 </div>
                             </div>
                         </template>
                     </div>
 
-                    <button @click="addLink" class="w-full py-2.5 border-2 border-dashed border-slate-300 text-slate-500 rounded-lg hover:bg-slate-50 hover:text-slate-700 transition-colors flex items-center justify-center gap-2 font-semibold text-sm">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        Ajouter un nouveau lien
+                    <button @click="addCategory" class="w-full py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700 font-semibold shadow flex items-center justify-center gap-2">
+                        <i class="fas fa-folder-plus"></i> Nouvelle Boîte (Catégorie)
                     </button>
                 </section>
 
-                <div class="pb-12"></div> <!-- Espace pour le bouton flottant -->
+                <!-- Exportation -->
+                <section class="space-y-4">
+                    <h3 class="font-bold text-slate-400 uppercase text-xs tracking-wider border-b pb-2 text-blue-600">5. Exporter ce Portail</h3>
+                    <p class="text-xs text-slate-500">Générez un fichier HTML complet contenant cette configuration, prêt à être déployé (ex: <code>marketing.html</code>).</p>
+                    
+                    <label class="flex items-start gap-2 p-3 border border-blue-100 bg-blue-50/50 rounded cursor-pointer hover:bg-blue-50 transition-colors">
+                        <input type="checkbox" x-model="exportFrozen" class="mt-1 rounded text-blue-600 focus:ring-blue-500">
+                        <div>
+                            <span class="block text-sm font-bold text-blue-900">Figer le portail (Mode Client)</span>
+                            <span class="block text-[10px] text-blue-700 mt-0.5 leading-tight">Cochez ceci pour supprimer totalement le bouton d'édition et le panneau d'administration du fichier exporté. Idéal pour livrer au client final.</span>
+                        </div>
+                    </label>
+
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600">Nom du fichier</label>
+                        <div class="flex">
+                            <input type="text" x-model="exportFilename" placeholder="marketing" class="w-full text-sm p-2 border rounded-l focus:ring-2 focus:ring-blue-500 outline-none">
+                            <span class="bg-slate-100 border border-l-0 border-slate-200 p-2 rounded-r text-sm text-slate-500">.html</span>
+                        </div>
+                    </div>
+                    <button @click="exportHtml" class="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold shadow-lg flex items-center justify-center gap-2 transition-colors">
+                        <i class="fas fa-download"></i> Télécharger le fichier .html
+                    </button>
+                </section>
+
+                <div class="pb-12"></div>
             </div>
         </div>
 
-        <!-- Preview (Droite / Centre) -->
-        <div class="flex-1 h-full overflow-y-auto relative w-full">
-            <div class="max-w-[480px] mx-auto px-4 py-12 md:py-20 flex flex-col items-center min-h-full">
+        <!-- Preview (Côté public) -->
+        <div class="flex-1 h-full overflow-y-auto relative w-full px-4 md:px-8">
+            <div class="max-w-[1200px] mx-auto py-12 md:py-16 flex flex-col min-h-full">
                 
-                <!-- En-tête Profil -->
-                <div class="text-center mb-10 w-full">
-                    <div class="w-24 h-24 md:w-28 md:h-28 mx-auto mb-4 rounded-full overflow-hidden border-4 shadow-lg" :style="`border-color: ${settings.buttonBgColor}`">
-                        <img :src="settings.logoUrl || 'https://via.placeholder.com/150?text=Logo'" alt="Logo" class="w-full h-full object-cover">
+                <!-- En-tête -->
+                <div class="text-center mb-12 w-full max-w-3xl mx-auto">
+                    <div class="w-28 h-28 mx-auto mb-6 rounded-2xl overflow-hidden shadow-xl bg-white p-2" :style="`border: 2px solid ${settings.buttonBgColor}`">
+                        <img :src="settings.logoUrl || 'https://via.placeholder.com/150'" alt="Logo" class="w-full h-full object-contain rounded-xl">
                     </div>
-                    <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight mb-3" x-text="settings.title || 'Mon Titre'"></h1>
-                    <p class="text-sm md:text-base font-medium opacity-90 leading-relaxed px-4" x-html="formatDescription(settings.description)"></p>
+                    <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-4" x-text="settings.title"></h1>
+                    <p class="text-lg md:text-xl font-medium opacity-90 leading-relaxed" x-html="settings.description.replace(/\n/g, '<br>')"></p>
                 </div>
 
-                <!-- Liste des boutons -->
-                <div class="w-full space-y-4">
-                    <template x-for="link in links" :key="link.id">
-                        <a :href="link.url" target="_blank" rel="noopener noreferrer" 
-                           class="link-button group w-full flex items-center p-4 rounded-2xl shadow-sm relative overflow-hidden"
-                           :style="`background-color: ${settings.buttonBgColor}; color: ${settings.buttonTextColor}`">
+                <!-- Grille des Catégories -->
+                <div class="w-full grid gap-6" :class="gridClass(settings.categoryColumns)">
+                    <template x-for="(cat, index) in categories" :key="cat.id">
+                        
+                        <!-- Boîte Catégorie (Card) -->
+                        <div class="flex flex-col h-full category-card rounded-3xl overflow-hidden shadow-lg border border-white/10"
+                             :style="`background-color: ${settings.buttonBgColor}; color: ${settings.buttonTextColor}`">
                             
-                            <!-- Icon/Emoji -->
-                            <div class="w-10 flex-shrink-0 text-2xl flex justify-center" x-text="link.emoji"></div>
+                            <!-- Header de la boîte (cliquable pour ouvrir/fermer) -->
+                            <button @click="cat.open = !cat.open" class="w-full p-6 flex flex-col items-center text-center cursor-pointer group hover:bg-black/5 transition-colors relative">
+                                
+                                <div class="w-16 h-16 rounded-full flex items-center justify-center text-3xl mb-4 shadow-sm group-hover:scale-110 transition-transform" :style="`color: ${cat.iconColor || '#ed2c1a'}; background-color: ${cat.iconColor || '#ed2c1a'}15;`">
+                                    <i :class="cat.icon || 'fas fa-folder'"></i>
+                                </div>
+                                
+                                <h2 class="text-2xl font-extrabold tracking-tight" x-text="cat.title"></h2>
+                                
+                                <!-- Indicateur d'ouverture (Chevron) -->
+                                <div class="absolute top-6 right-6 opacity-40 group-hover:opacity-100 transition-opacity">
+                                    <i class="fas fa-chevron-down transition-transform duration-300" :class="cat.open ? 'rotate-180' : ''"></i>
+                                </div>
+                            </button>
                             
-                            <!-- Text content -->
-                            <div class="flex-1 text-center pr-10">
-                                <h3 class="font-bold text-base md:text-lg" x-text="link.title"></h3>
-                                <p x-show="link.subtitle" class="text-xs md:text-sm mt-0.5 opacity-80" x-text="link.subtitle"></p>
-                            </div>
+                            <!-- Contenu de la boîte (Outils) - Révélé avec Accordion x-collapse -->
+                            <div x-show="cat.open" x-collapse>
+                                <div class="p-6 pt-0 border-t border-black/5 bg-black/5">
+                                    <div class="mt-6 grid gap-4" :class="gridClass(settings.linkColumns)">
+                                        <template x-for="link in cat.links" :key="link.id">
+                                            
+                                            <!-- Carte Outil -->
+                                            <a :href="link.url" target="_blank" rel="noopener noreferrer" 
+                                               class="link-button group flex items-center p-4 rounded-2xl bg-white shadow-sm border border-slate-100 relative overflow-hidden h-full">
+                                                
+                                                <!-- Icone FontAwesome -->
+                                                <div class="w-10 h-10 rounded-full flex items-center justify-center text-lg shrink-0 mr-4" :style="`color: ${link.iconColor || '#ed2c1a'}; background-color: ${link.iconColor || '#ed2c1a'}15;`">
+                                                    <i :class="link.icon || 'fas fa-link'"></i>
+                                                </div>
+                                                
+                                                <!-- Text content -->
+                                                <div class="flex-1 pr-6">
+                                                    <h3 class="font-bold text-sm md:text-base leading-tight text-slate-800" x-text="link.title"></h3>
+                                                </div>
 
-                            <!-- Arrow icon -->
-                            <div class="absolute right-4 opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:translate-x-1">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                                <!-- Fleche -->
+                                                <div class="absolute right-4 opacity-0 group-hover:opacity-100 transition-all transform group-hover:translate-x-1">
+                                                    <i class="fas fa-arrow-right text-slate-400"></i>
+                                                </div>
+                                            </a>
+
+                                        </template>
+                                        
+                                        <!-- Message vide -->
+                                        <div x-show="cat.links.length === 0" class="text-center p-4 text-sm opacity-50 italic col-span-full">
+                                            Aucun outil dans cette boîte.
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </a>
+                            
+                        </div>
                     </template>
                 </div>
 
-                <!-- Footer branding -->
-                <div class="mt-16 text-center opacity-70">
-                    <a href="#" class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors text-sm font-semibold backdrop-blur-sm">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/></svg>
-                        Créé avec My Sport Business
-                    </a>
+                <!-- Footer -->
+                <div class="mt-20 text-center opacity-60 pb-10">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold">
+                        &copy; 2026 My Sport Business
+                    </div>
                 </div>
 
             </div>
@@ -216,125 +337,216 @@
     <script>
         const defaultState = {
             settings: {
-                bgColor: '#5b7065',
+                bgColor: '#140c4f',
                 textColor: '#ffffff',
                 buttonBgColor: '#ffffff',
-                buttonTextColor: '#5b7065',
-                logoUrl: 'https://i.ibb.co/3s7s6qM/logo-mss.png', // Exemple de logo générique ou place holder
-                title: 'My Sport Business Tools',
-                description: 'Tous les outils développés pour booster l\'acquisition de nos clients. 🚀\nSélectionnez un outil ci-dessous.',
+                buttonTextColor: '#140c4f',
+                logoUrl: 'images/logoMSBLarge.jpeg',
+                title: 'My Sport Business',
+                description: 'Portail de démonstration stratégique.',
+                categoryColumns: '3', 
+                linkColumns: '1'
             },
-            links: [
-                { id: 1, emoji: '📊', title: 'Simulateur de Capacité & CA', subtitle: 'Pour anticiper le scaling', url: 'simulateur_capacite.html' },
-                { id: 2, emoji: '🎯', title: 'Audit Marketing Interactif', subtitle: 'Générer des leads qualifiés', url: '#' },
-                { id: 3, emoji: '⚡', title: 'Landing Page Dynamique', subtitle: 'Test de conversion', url: 'https://landingcarpathdynamique.netlify.app' },
-                { id: 4, emoji: '📱', title: 'Outil de collecte d\'avis Google', subtitle: 'Scannez le QR Code', url: '#' }
+            categories: [
+                {
+                    id: 1,
+                    title: 'Pilotage & Outils',
+                    icon: 'fas fa-cogs',
+                    iconColor: '#ed2c1a',
+                    open: true, // Ouvert par défaut pour la démo
+                    links: [
+                        { id: 101, icon: 'fas fa-calculator', iconColor: '#ed2c1a', title: 'Simulateur de Capacité & CA', url: 'simulateur_capacite.html' }
+                    ]
+                },
+                {
+                    id: 2,
+                    title: 'Marché & Stratégie',
+                    icon: 'fas fa-chart-pie',
+                    iconColor: '#5b7065',
+                    open: true,
+                    links: [
+                        { id: 201, icon: 'fas fa-chart-line', iconColor: '#5b7065', title: 'Étude de Concurrence 2026', url: 'landing_etude_concurrence.html' },
+                        { id: 202, icon: 'fas fa-bullseye', iconColor: '#140c4f', title: 'Présentation Stratégique', url: 'soutenance_presentation.html' }
+                    ]
+                },
+                {
+                    id: 3,
+                    title: 'Ressources',
+                    icon: 'fas fa-folder',
+                    iconColor: '#140c4f',
+                    open: false,
+                    links: [
+                        { id: 301, icon: 'fas fa-graduation-cap', iconColor: '#ed2c1a', title: 'Portail Soutenance (Clean)', url: 'portail_soutenance.html' }
+                    ]
+                }
             ]
         };
 
         document.addEventListener('alpine:init', () => {
-            Alpine.data('linktreeApp', () => ({
+            Alpine.data('portalApp', () => ({
                 editMode: false,
+                exportFilename: 'nouveau_portail',
+                exportFrozen: false,
                 settings: JSON.parse(JSON.stringify(defaultState.settings)),
-                links: JSON.parse(JSON.stringify(defaultState.links)),
-                nextId: 100,
+                categories: JSON.parse(JSON.stringify(defaultState.categories)),
 
                 init() {
                     this.loadState();
-                    // Permet d'ouvrir directement l'éditeur s'il n'y a pas de lien
-                    if(this.links.length === 0) this.editMode = true;
+                    if(this.categories.length === 0) this.editMode = true;
                 },
 
-                formatDescription(text) {
-                    if(!text) return '';
-                    return text.replace(/\n/g, '<br>');
+                // Utilitaire pour générer la classe grid-cols-X dynamiquement
+                // Tailwind a besoin que les classes complètes existent dans le code source pour ne pas les purger
+                gridClass(cols) {
+                    const map = {
+                        '1': 'grid-cols-1',
+                        '2': 'grid-cols-1 md:grid-cols-2',
+                        '3': 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+                        '4': 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
+                        '5': 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5',
+                        '6': 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6'
+                    };
+                    return map[String(cols)] || 'grid-cols-1';
                 },
 
-                handleImageUpload(event) {
-                    const file = event.target.files[0];
-                    if (file) {
-                        if (file.size > 2 * 1024 * 1024) { 
-                            alert("L'image est trop lourde (limite 2Mo pour le stockage local). Veuillez choisir une image plus légère.");
-                            return;
-                        }
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            this.settings.logoUrl = e.target.result;
-                            this.saveState();
-                        };
-                        reader.readAsDataURL(file);
+                // Gestion des Catégories
+                addCategory() {
+                    this.categories.push({
+                        id: Date.now(),
+                        title: 'Nouvelle Boîte',
+                        icon: 'fas fa-folder',
+                        iconColor: '#140c4f',
+                        open: true,
+                        links: []
+                    });
+                    this.saveState();
+                },
+                removeCategory(catIndex) {
+                    if(confirm("Supprimer cette boîte et tous ses outils ?")) {
+                        this.categories.splice(catIndex, 1);
+                        this.saveState();
+                    }
+                },
+                moveCategoryUp(index) {
+                    if (index > 0) {
+                        [this.categories[index - 1], this.categories[index]] = [this.categories[index], this.categories[index - 1]];
+                        this.saveState();
+                    }
+                },
+                moveCategoryDown(index) {
+                    if (index < this.categories.length - 1) {
+                        [this.categories[index + 1], this.categories[index]] = [this.categories[index], this.categories[index + 1]];
+                        this.saveState();
                     }
                 },
 
-                addLink() {
-                    this.nextId++;
-                    this.links.push({
-                        id: this.nextId,
-                        emoji: '🔗',
-                        title: 'Nouveau lien',
-                        subtitle: '',
+                // Gestion des Liens
+                addLink(catIndex) {
+                    this.categories[catIndex].links.push({
+                        id: Date.now(),
+                        icon: 'fas fa-link',
+                        iconColor: '#ed2c1a',
+                        title: 'Nouvel Outil',
                         url: 'https://'
                     });
                     this.saveState();
-                    // Scroll to bottom of admin panel smoothly
-                    setTimeout(() => {
-                        const list = this.$refs.linksList;
-                        if(list) list.parentElement.scrollTop = list.parentElement.scrollHeight;
-                    }, 50);
                 },
-
-                removeLink(index) {
-                    if(confirm("Supprimer ce lien ?")) {
-                        this.links.splice(index, 1);
+                removeLink(catIndex, linkIndex) {
+                    if(confirm("Supprimer cet outil ?")) {
+                        this.categories[catIndex].links.splice(linkIndex, 1);
+                        this.saveState();
+                    }
+                },
+                moveLinkUp(catIndex, linkIndex) {
+                    if (linkIndex > 0) {
+                        const links = this.categories[catIndex].links;
+                        [links[linkIndex - 1], links[linkIndex]] = [links[linkIndex], links[linkIndex - 1]];
+                        this.saveState();
+                    }
+                },
+                moveLinkDown(catIndex, linkIndex) {
+                    const links = this.categories[catIndex].links;
+                    if (linkIndex < links.length - 1) {
+                        [links[linkIndex + 1], links[linkIndex]] = [links[linkIndex], links[linkIndex + 1]];
                         this.saveState();
                     }
                 },
 
-                moveLinkUp(index) {
-                    if (index > 0) {
-                        const temp = this.links[index];
-                        this.links[index] = this.links[index - 1];
-                        this.links[index - 1] = temp;
-                        this.saveState();
-                    }
-                },
-
-                moveLinkDown(index) {
-                    if (index < this.links.length - 1) {
-                        const temp = this.links[index];
-                        this.links[index] = this.links[index + 1];
-                        this.links[index + 1] = temp;
-                        this.saveState();
-                    }
-                },
-
+                // Sauvegarde
                 saveState() {
-                    const state = {
-                        settings: this.settings,
-                        links: this.links
-                    };
-                    localStorage.setItem('mssLinktreeState', JSON.stringify(state));
+                    try {
+                        localStorage.setItem('mssLinktreeStateV4', JSON.stringify({
+                            settings: this.settings,
+                            categories: this.categories.map(c => ({...c, open: false})) // Ne pas save l'état ouvert/fermé
+                        }));
+                    } catch (e) {}
                 },
-
                 loadState() {
-                    const saved = localStorage.getItem('mssLinktreeState');
-                    if (saved) {
-                        try {
+                    try {
+                        const saved = localStorage.getItem('mssLinktreeStateV4');
+                        if (saved) {
                             const parsed = JSON.parse(saved);
                             this.settings = { ...this.settings, ...parsed.settings };
-                            this.links = parsed.links || this.links;
-                        } catch (e) {
-                            console.error("Erreur de chargement", e);
+                            
+                            // Fusionner les catégories sans écraser 'open' (on met open=false par défaut ou true si on veut)
+                            if(parsed.categories) {
+                                this.categories = parsed.categories.map(c => ({...c, open: false}));
+                            }
                         }
+                    } catch (e) {}
+                },
+                resetDefaults() {
+                    if(confirm("Réinitialiser avec le contenu par défaut My Sport Business ?")) {
+                        localStorage.removeItem('mssLinktreeStateV4');
+                        this.settings = JSON.parse(JSON.stringify(defaultState.settings));
+                        this.categories = JSON.parse(JSON.stringify(defaultState.categories));
                     }
                 },
-
-                resetDefaults() {
-                    if(confirm("Attention : Cela effacera tous vos liens et réglages personnalisés. Continuer ?")) {
-                        localStorage.removeItem('mssLinktreeState');
-                        this.settings = JSON.parse(JSON.stringify(defaultState.settings));
-                        this.links = JSON.parse(JSON.stringify(defaultState.links));
-                    }
+                
+                exportHtml() {
+                    fetch(window.location.href)
+                        .then(response => response.text())
+                        .then(html => {
+                            const newState = {
+                                settings: this.settings,
+                                categories: this.categories.map(c => ({...c, open: false}))
+                            };
+                            const stateString = JSON.stringify(newState, null, 12);
+                            
+                            // Remplacement du defaultState dans le code source original
+                            let modifiedHtml = html.replace(
+                                /const defaultState = [\s\S]*?;\s*document\.addEventListener/m,
+                                `const defaultState = ${stateString};\n\n        document.addEventListener`
+                            );
+                            
+                            // Si l'utilisateur a choisi de figer le portail, on supprime carrément l'admin du DOM !
+                            if (this.exportFrozen) {
+                                const parser = new DOMParser();
+                                const doc = parser.parseFromString(modifiedHtml, 'text/html');
+                                const btn = doc.getElementById('admin-floating-btn');
+                                if (btn) btn.remove();
+                                const panel = doc.getElementById('admin-panel');
+                                if (panel) panel.remove();
+                                modifiedHtml = "<!DOCTYPE html>\n" + doc.documentElement.outerHTML;
+                            }
+                            
+                            const blob = new Blob([modifiedHtml], { type: 'text/html' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            let filename = this.exportFilename.trim();
+                            if (!filename) filename = 'nouveau_portail';
+                            if (!filename.endsWith('.html')) filename += '.html';
+                            a.download = filename;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                        })
+                        .catch(err => {
+                            console.error("Export error:", err);
+                            alert("Erreur lors de l'exportation. Assurez-vous d'être connecté à internet.");
+                        });
                 }
             }));
         });

@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Étude de Concurrence - My Sport Business</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#140c4f',
+                        secondary: '#5b7065',
+                        brandRed: '#ed2c1a',
+                        pagebg: '#f8fafc',
+                        blue: '#254edd'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'slide-up': 'slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(40px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+    </style>
+</head>
+<body class="text-slate-800 antialiased selection:bg-brandRed selection:text-white">
+
+    <!-- Navbar -->
+    <nav class="fixed w-full z-50 transition-all duration-300 bg-primary/90 backdrop-blur-md border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <img src="images/logoMSBLarge.jpeg" alt="Logo My Sport Business" class="h-12 w-auto object-contain rounded-md">
+            </div>
+            <div class="hidden md:flex gap-8 text-white/80 font-medium text-sm">
+                <a href="#hero" class="hover:text-white transition-colors">Accueil</a>
+                <a href="#marche" class="hover:text-white transition-colors">Le Marché</a>
+                <a href="#positionnement" class="hover:text-white transition-colors">Positionnement</a>
+                <a href="#solution" class="hover:text-white transition-colors">L'Offre 360°</a>
+            </div>
+            <a href="#solution" class="bg-brandRed text-white px-6 py-2.5 rounded-full font-bold text-sm hover:bg-red-600 transition-all hover:shadow-[0_0_15px_rgba(237,44,26,0.5)]">
+                Voir l'offre à -500€/mois
+            </a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 bg-primary overflow-hidden">
+        <!-- Background decorative elements -->
+        <div class="absolute top-0 right-0 -mr-20 -mt-20 w-[600px] h-[600px] bg-blue/20 rounded-full blur-[120px] pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-[500px] h-[500px] bg-brandRed/10 rounded-full blur-[100px] pointer-events-none"></div>
+        
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="flex flex-col lg:flex-row items-center gap-16">
+                <!-- Text Content -->
+                <div class="lg:w-1/2 text-white">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 mb-8 opacity-0 animate-slide-up">
+                        <span class="w-2 h-2 rounded-full bg-brandRed animate-pulse"></span>
+                        <span class="text-sm font-semibold tracking-wide uppercase">Étude Concurrentielle 2026</span>
+                    </div>
+                    
+                    <h1 class="text-5xl lg:text-7xl font-black leading-[1.1] tracking-tight mb-6 opacity-0 animate-slide-up delay-100">
+                        La Croissance pour les Structures <span class="text-transparent bg-clip-text bg-gradient-to-r from-brandRed to-orange-500">Indépendantes</span>
+                    </h1>
+                    
+                    <p class="text-xl text-white/70 leading-relaxed mb-10 opacity-0 animate-slide-up delay-200">
+                        Analyse du paysage concurrentiel : pourquoi les solutions logicielles et les agences traditionnelles échouent à générer un réel R.O.I pour les gérants de salles de sport.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 opacity-0 animate-slide-up delay-300">
+                        <a href="#marche" class="bg-brandRed text-white px-8 py-4 rounded-full font-bold text-lg text-center hover:bg-red-600 transition-all hover:-translate-y-1 hover:shadow-[0_10px_30px_-10px_rgba(237,44,26,0.6)]">
+                            Voir l'analyse du marché
+                        </a>
+                        <a href="#solution" class="glass-panel text-white px-8 py-4 rounded-full font-bold text-lg text-center hover:bg-white/10 transition-all">
+                            Découvrir le modèle 360°
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Generated Visual -->
+                <div class="lg:w-1/2 w-full opacity-0 animate-slide-up delay-200">
+                    <div class="relative w-full aspect-square md:aspect-[4/3] lg:aspect-square">
+                        <!-- L'image générée est insérée ici -->
+                        <img src="images/growth_sports_gym.png" alt="Croissance d'une structure sportive" class="w-full h-full object-cover rounded-[3rem] shadow-2xl border border-white/10 animate-float">
+                        
+                        <!-- Floating badge -->
+                        <div class="absolute -bottom-6 -left-6 glass-panel p-6 rounded-2xl shadow-xl flex items-center gap-4 animate-float" style="animation-delay: -3s;">
+                            <div class="w-12 h-12 rounded-full bg-brandRed flex items-center justify-center text-white text-xl">
+                                <i class="fas fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <p class="text-white/60 text-sm font-semibold uppercase tracking-wider">Acquisition</p>
+                                <p class="text-white font-bold text-2xl">+300% <span class="text-sm font-normal text-white/60">de ROI moyen</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Le Marché Actuel (Concurrence) -->
+    <section id="marche" class="py-24 bg-pagebg">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="text-brandRed font-bold tracking-[0.2em] uppercase text-sm mb-2 block">Paysage Concurrentiel</span>
+                <h2 class="text-4xl md:text-5xl font-black text-primary mb-6">Les 3 catégories d'acteurs et leurs limites</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Le marché de l'accompagnement des structures sportives est fragmenté. Les gérants font face à un choix binaire : des outils de gestion incomplets ou des agences marketing hors de prix.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Logiciels de réservation -->
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl transition-all group flex flex-col h-full">
+                    <div class="w-16 h-16 rounded-2xl bg-blue/10 text-blue flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-primary mb-3">SaaS & Gestion</h3>
+                    <p class="text-slate-500 mb-6 font-medium text-sm">Ex: B-Sport, Mindbody, Deciplus, BSWeb</p>
+                    <p class="text-gray-600 mb-6 flex-grow">Ces solutions excellent dans la gestion de planning et l'encaissement, mais délèguent totalement la responsabilité de la croissance au gérant.</p>
+                    <div class="bg-red-50 p-4 rounded-xl">
+                        <p class="font-bold text-red-600 text-sm mb-2">Limites majeures :</p>
+                        <ul class="space-y-2 text-red-800 text-sm">
+                            <li class="flex gap-2 items-start"><i class="fas fa-times mt-0.5"></i> <span>Zéro acquisition de nouveaux leads.</span></li>
+                            <li class="flex gap-2 items-start"><i class="fas fa-times mt-0.5"></i> <span>Pas d'accompagnement commercial ni d'audit.</span></li>
+                            <li class="flex gap-2 items-start"><i class="fas fa-times mt-0.5"></i> <span>Sites web basiques (templates) sans vrai SEO.</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Agences classiques -->
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl transition-all group flex flex-col h-full">
+                    <div class="w-16 h-16 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-bullhorn"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-primary mb-3">Agences Marketing</h3>
+                    <p class="text-slate-500 mb-6 font-medium text-sm">Agences de communication généralistes</p>
+                    <p class="text-gray-600 mb-6 flex-grow">Elles offrent une prise en charge marketing (Google Ads, Meta Ads) mais facturent leurs services très cher, sans comprendre la réalité du terrain d'une salle de sport.</p>
+                    <div class="bg-red-50 p-4 rounded-xl">
+                        <p class="font-bold text-red-600 text-sm mb-2">Limites majeures :</p>
+                        <ul class="space-y-2 text-red-800 text-sm">
+                            <li class="flex gap-2 items-start"><i class="fas fa-times mt-0.5"></i> <span>Budget prohibitif (>1500€/mois + budget pub).</span></li>
+                            <li class="flex gap-2 items-start"><i class="fas fa-times mt-0.5"></i> <span>Aucun conseil sur la vente sur site.</span></li>
+                            <li class="flex gap-2 items-start"><i class="fas fa-times mt-0.5"></i> <span>Pas de vision à 360° du process client (souvent juste de la pub).</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Le DIY -->
+                <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-xl transition-all group flex flex-col h-full">
+                    <div class="w-16 h-16 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold text-primary mb-3">Le Do It Yourself</h3>
+                    <p class="text-slate-500 mb-6 font-medium text-sm">Ex: Wix, Wordpress, Canva, Réseaux en interne</p>
+                    <p class="text-gray-600 mb-6 flex-grow">L'approche la moins coûteuse financièrement, adoptée par 80% des indépendants au démarrage, mais la plus destructrice en termes de temps et d'image.</p>
+                    <div class="bg-red-50 p-4 rounded-xl">
+                        <p class="font-bold text-red-600 text-sm mb-2">Limites majeures :</p>
+                        <ul class="space-y-2 text-red-800 text-sm">
+                            <li class="flex gap-2 items-start"><i class="fas fa-times mt-0.5"></i> <span>Extrêmement chronophage (détourne du métier de coach).</span></li>
+                            <li class="flex gap-2 items-start"><i class="fas fa-times mt-0.5"></i> <span>Résultats techniques amateurs (SEO inexistant).</span></li>
+                            <li class="flex gap-2 items-start"><i class="fas fa-times mt-0.5"></i> <span>Aucune stratégie de conversion réfléchie.</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Carte de positionnement -->
+    <section id="positionnement" class="py-24 bg-white relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="text-brandRed font-bold tracking-[0.2em] uppercase text-sm mb-2 block">Différenciation</span>
+                <h2 class="text-4xl md:text-5xl font-black text-primary mb-6">Carte de Positionnement</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Le marché actuel oblige à choisir entre <strong>le prix abordable</strong> (mais incomplet) et la <strong>prise en charge marketing</strong> (mais hors de prix). 
+                    Notre offre se positionne dans un océan bleu inédit.
+                </p>
+            </div>
+
+            <!-- Positionnement Chart -->
+            <div class="max-w-5xl mx-auto bg-white rounded-3xl p-6 md:p-10 border border-slate-200 shadow-sm relative">
+                <div class="relative w-full aspect-[4/3] md:aspect-[2/1] mt-12 mb-20 ml-20 md:ml-28 mr-8 md:mr-16">
+                    
+                    <!-- Axes -->
+                    <div class="absolute left-0 top-0 bottom-0 w-0.5 bg-slate-300"></div> <!-- Axe Y -->
+                    <div class="absolute left-0 right-0 bottom-0 h-0.5 bg-slate-300"></div> <!-- Axe X -->
+                    
+                    <!-- Labels Axe Y -->
+                    <div class="absolute left-0 top-0 -translate-x-full pr-4 md:pr-6 text-[10px] md:text-sm font-bold text-slate-500 text-right whitespace-nowrap">
+                        PRIX ÉLEVÉ<br><span class="font-normal">>1500€</span>
+                    </div>
+                    <div class="absolute left-0 bottom-0 -translate-x-full pr-4 md:pr-6 text-[10px] md:text-sm font-bold text-slate-500 text-right whitespace-nowrap">
+                        ABORDABLE<br><span class="font-normal"><500€</span>
+                    </div>
+                    
+                    <!-- Labels Axe X -->
+                    <div class="absolute left-0 bottom-0 translate-y-full pt-4 md:pt-6 text-[10px] md:text-sm font-bold text-slate-500 whitespace-nowrap">
+                        OUTILS SEULS
+                    </div>
+                    <div class="absolute right-0 bottom-0 translate-y-full pt-4 md:pt-6 text-[10px] md:text-sm font-bold text-slate-500 text-right whitespace-nowrap">
+                        PRISE EN CHARGE 360°<br><span class="font-normal text-[9px] md:text-xs text-slate-400">Marketing + Audit</span>
+                    </div>
+
+                    <!-- Plot Area (Inside the axes) -->
+                    <div class="absolute inset-0">
+                        <!-- Grille de fond -->
+                        <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: linear-gradient(slate-300 1px, transparent 1px), linear-gradient(90deg, slate-300 1px, transparent 1px); background-size: 50px 50px;"></div>
+                        
+                        <!-- Bubble 1: Logiciels SaaS -->
+                        <div class="absolute left-[20%] bottom-[15%] transform -translate-x-1/2 translate-y-1/2 group z-30">
+                            <div class="w-14 h-14 md:w-20 md:h-20 rounded-full bg-blue-50 border-2 border-blue-400 flex flex-col items-center justify-center shadow-sm">
+                                <i class="fas fa-calendar-check text-blue-600 text-lg md:text-xl mb-0.5"></i>
+                            </div>
+                            <div class="absolute top-1/2 left-full -translate-y-1/2 ml-3 w-max text-left">
+                                <p class="font-bold text-[10px] md:text-sm text-slate-700">Logiciels SaaS</p>
+                                <p class="text-[9px] md:text-xs text-slate-500">B-Sport, Mindbody</p>
+                            </div>
+                        </div>
+
+                        <!-- Bubble 2: Agences Marketing -->
+                        <div class="absolute left-[50%] top-[30%] transform -translate-x-1/2 translate-y-1/2 group z-30">
+                            <div class="w-16 h-16 md:w-24 md:h-24 rounded-full bg-purple-50 border-2 border-purple-400 flex flex-col items-center justify-center shadow-sm">
+                                <i class="fas fa-bullhorn text-purple-600 text-xl md:text-2xl mb-0.5"></i>
+                            </div>
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-max text-center">
+                                <p class="font-bold text-[10px] md:text-sm text-slate-700">Agences Classiques</p>
+                            </div>
+                        </div>
+
+                        <!-- Bubble 3: DIY -->
+                        <div class="absolute left-[5%] bottom-[5%] transform -translate-x-1/2 translate-y-1/2 group z-30">
+                            <div class="w-10 h-10 md:w-14 md:h-14 rounded-full bg-orange-50 border-2 border-orange-400 flex flex-col items-center justify-center shadow-sm">
+                                <i class="fas fa-tools text-orange-600 text-sm md:text-lg"></i>
+                            </div>
+                            <div class="absolute top-1/2 left-full -translate-y-1/2 ml-3 w-max text-left">
+                                <p class="font-bold text-[10px] md:text-sm text-slate-700">DIY (Wix)</p>
+                            </div>
+                        </div>
+
+                        <!-- Bubble 4: My Sport Business -->
+                        <div class="absolute left-[85%] bottom-[15%] transform -translate-x-1/2 translate-y-1/2 group z-40 animate-float">
+                            <!-- Ripple effect -->
+                            <div class="absolute inset-0 bg-brandRed/30 rounded-full animate-ping opacity-75"></div>
+                            <div class="relative w-20 h-20 md:w-32 md:h-32 rounded-full bg-brandRed text-white flex flex-col items-center justify-center shadow-[0_0_30px_rgba(237,44,26,0.5)] border-4 border-white">
+                                <span class="font-black text-[10px] md:text-base leading-tight text-center">MY SPORT<br>BUSINESS</span>
+                            </div>
+                            <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-max text-center bg-white p-2 md:p-3 rounded-xl shadow-xl border border-slate-100">
+                                <p class="font-bold text-brandRed text-[10px] md:text-sm uppercase tracking-wide">L'Océan Bleu</p>
+                                <p class="text-[9px] md:text-xs font-bold text-slate-800">< 500€/mois</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tableaux Comparatifs -->
+    <section id="comparatif" class="py-24 bg-slate-50 relative border-t border-slate-200">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="text-brandRed font-bold tracking-[0.2em] uppercase text-sm mb-2 block">Comparaison Détaillée</span>
+                <h2 class="text-3xl md:text-5xl font-black text-primary mb-6">Benchmarking du Marché</h2>
+            </div>
+
+            <!-- Tableau 1 : Modèle & Stratégie -->
+            <div class="mb-20">
+                <h3 class="text-xl md:text-2xl font-bold text-primary mb-6 flex items-center"><i class="fas fa-chess-knight text-brandRed mr-3"></i> 1. Dimensions Stratégiques & Modèle Économique</h3>
+                <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
+                    <table class="w-full text-left border-collapse min-w-[800px]">
+                        <thead>
+                            <tr class="bg-primary text-white">
+                                <th class="p-4 font-bold border-b border-white/20 w-1/4">Dimension</th>
+                                <th class="p-4 font-black border-b border-white/20 bg-brandRed text-center">My Sport Business</th>
+                                <th class="p-4 font-bold border-b border-white/20 text-center border-l border-white/10">Deciplus</th>
+                                <th class="p-4 font-bold border-b border-white/20 text-center border-l border-white/10">B-Sport</th>
+                                <th class="p-4 font-bold border-b border-white/20 text-center border-l border-white/10">Fitness Boost</th>
+                                <th class="p-4 font-bold border-b border-white/20 text-center border-l border-white/10">Agences locales</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white text-sm md:text-base">
+                            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Modèle</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30">Done For You</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Outil self-service DIY</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Outil self-service DIY</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Done For You</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Done For You</td>
+                            </tr>
+                            <tr class="border-b border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Spécialisation sport</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30">Oui</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Oui</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Oui</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Oui</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                            </tr>
+                            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Ecosystème 360°<br><span class="text-xs font-normal text-slate-500">(acquisition, conversion, suivi et relation client, process et outils, pilotage et ROI)</span></td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30">Oui</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                            </tr>
+                            <tr class="border-b border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Indépendant du logiciel</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30">Oui <i class="fas fa-check-circle text-green-500 ml-1"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non (exclusif)</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non (exclusif)</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Oui</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Oui</td>
+                            </tr>
+                            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Exécution commerciale terrain</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30">Oui <i class="fas fa-check-circle text-green-500 ml-1"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                            </tr>
+                            <tr class="border-b border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Tarif mensuel estimé</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30 text-lg">390€</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">139 € <span class="text-xs block">(logiciel)</span></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">150 € <span class="text-xs block">(logiciel)</span></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">~800–2000 €</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">~500–2000 €</td>
+                            </tr>
+                            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">ROI chiffré et suivi</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30">Oui <i class="fas fa-check-circle text-green-500 ml-1"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Partiel</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Partiel</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Oui</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Rarement</td>
+                            </tr>
+                            <tr class="border-b border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Audit / Conseil stratégique</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30">Oui <i class="fas fa-check-circle text-green-500 ml-1"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                            </tr>
+                            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Pilotage adapté gérants non-experts</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30">Oui <i class="fas fa-check-circle text-green-500 ml-1"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Partiel</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                            </tr>
+                            <tr class="border-b border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Accès < 500€/mois</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30">Oui <i class="fas fa-check-circle text-green-500 ml-1"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Oui <span class="text-xs block">(outil seul)</span></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Oui <span class="text-xs block">(outil seul)</span></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Non</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Parfois</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tableau 2 : Couverture Fonctionnelle -->
+            <div>
+                <h3 class="text-xl md:text-2xl font-bold text-primary mb-6 flex items-center"><i class="fas fa-cogs text-brandRed mr-3"></i> 2. Couverture Fonctionnelle & Outils</h3>
+                <div class="overflow-x-auto rounded-2xl border border-slate-200 shadow-sm">
+                    <table class="w-full text-left border-collapse min-w-[800px]">
+                        <thead>
+                            <tr class="bg-primary text-white">
+                                <th class="p-4 font-bold border-b border-white/20 w-1/4">Thème</th>
+                                <th class="p-4 font-black border-b border-white/20 bg-brandRed text-center">My Sport Business</th>
+                                <th class="p-4 font-bold border-b border-white/20 text-center border-l border-white/10">Deciplus</th>
+                                <th class="p-4 font-bold border-b border-white/20 text-center border-l border-white/10">B-Sport</th>
+                                <th class="p-4 font-bold border-b border-white/20 text-center border-l border-white/10">Fitness Boost</th>
+                                <th class="p-4 font-bold border-b border-white/20 text-center border-l border-white/10">Agences locales</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white text-sm md:text-base">
+                            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">ROI marketing pour gérants</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Partiel</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Partiel</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                            </tr>
+                            <tr class="border-b border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Taux de remplissage créneaux</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Oui</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Oui</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                            </tr>
+                            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Conseil stratégique</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                            </tr>
+                            <tr class="border-b border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Indépendance logiciel de réservation</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">N/A</td>
+                            </tr>
+                            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Process de vente en salle</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                            </tr>
+                            <tr class="border-b border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Création de contenus</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                            </tr>
+                            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Création de site web</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                            </tr>
+                            <tr class="border-b border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Création Email automation</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                            </tr>
+                            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Acquisition Avis client</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                            </tr>
+                            <tr class="border-b border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Réponses aux avis clients</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                            </tr>
+                            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Gestion page GBP</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                            </tr>
+                            <tr class="border-b border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Création campagne email et séquence d'emails</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                            </tr>
+                            <tr class="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Blog / contenus éducatifs</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30 text-sm">À construire</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-check-circle text-green-500 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-times text-red-400 text-lg"></i></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-check-circle text-green-500 text-lg"></i><i class="fas fa-check-circle text-green-500 text-lg"></i><br><span class="text-xs">(riche)</span></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Partiel</td>
+                            </tr>
+                            <tr class="border-b border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors">
+                                <td class="p-4 font-semibold text-slate-800">Témoignages vidéo clients</td>
+                                <td class="p-4 text-center font-bold text-brandRed bg-red-50/30 text-sm">À construire</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Partiel</td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100"><i class="fas fa-check-circle text-green-500 text-lg"></i><i class="fas fa-check-circle text-green-500 text-lg"></i><br><span class="text-xs">(nombreux)</span></td>
+                                <td class="p-4 text-center text-slate-600 border-l border-slate-100">Partiel</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- La Solution MSS -->
+    <section id="solution" class="py-24 bg-white relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <span class="text-brandRed font-bold tracking-[0.2em] uppercase text-sm mb-2 block">Notre Avantage Concurrentiel</span>
+                <h2 class="text-4xl md:text-5xl font-black text-primary mb-6">Le modèle "Done For You" exclusif au sport.</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Plutôt que d'utiliser 3 prestataires différents, My Sport Business centralise <strong>100% de l'écosystème de conversion</strong> pour vous garantir un retour sur investissement rapide et durable.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Google Business -->
+                <div class="bg-primary p-8 rounded-3xl shadow-lg border border-white/10 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-blue/20 transform scale-0 group-hover:scale-100 transition-transform duration-500 rounded-3xl"></div>
+                    <div class="relative z-10">
+                        <div class="w-14 h-14 rounded-full bg-blue text-white flex items-center justify-center text-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fab fa-google"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Google Business</h3>
+                        <ul class="space-y-3 text-white/80">
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Optimisation SEO local</li>
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Augmentation des avis (QR)</li>
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Réponses automatiques par I.A</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Site Web Optimisé -->
+                <div class="bg-primary p-8 rounded-3xl shadow-lg border border-white/10 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-purple-600/20 transform scale-0 group-hover:scale-100 transition-transform duration-500 rounded-3xl"></div>
+                    <div class="relative z-10">
+                        <div class="w-14 h-14 rounded-full bg-purple-600 text-white flex items-center justify-center text-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Site Web Optimisé</h3>
+                        <ul class="space-y-3 text-white/80">
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Hébergement & Maintenance</li>
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Modifications illimitées</li>
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Intégration Analytics</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Réseaux Sociaux -->
+                <div class="bg-primary p-8 rounded-3xl shadow-lg border border-white/10 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-pink-500/20 transform scale-0 group-hover:scale-100 transition-transform duration-500 rounded-3xl"></div>
+                    <div class="relative z-10">
+                        <div class="w-14 h-14 rounded-full bg-pink-500 text-white flex items-center justify-center text-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fab fa-instagram"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Réseaux Sociaux</h3>
+                        <ul class="space-y-3 text-white/80">
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Posts & Publicités (Ads)</li>
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Charte graphique ciblée</li>
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Lead management</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- CRM & Fidélisation -->
+                <div class="bg-primary p-8 rounded-3xl shadow-lg border border-white/10 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-brandRed/20 transform scale-0 group-hover:scale-100 transition-transform duration-500 rounded-3xl"></div>
+                    <div class="relative z-10">
+                        <div class="w-14 h-14 rounded-full bg-brandRed text-white flex items-center justify-center text-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-3">CRM & Fidélisation</h3>
+                        <ul class="space-y-3 text-white/80">
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Gestion de la base clients</li>
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Séquences Emails marketing</li>
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Relances SMS automatisées</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Process de Vente -->
+                <div class="bg-primary p-8 rounded-3xl shadow-lg border border-white/10 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-green-600/20 transform scale-0 group-hover:scale-100 transition-transform duration-500 rounded-3xl"></div>
+                    <div class="relative z-10">
+                        <div class="w-14 h-14 rounded-full bg-green-600 text-white flex items-center justify-center text-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Process de Vente</h3>
+                        <ul class="space-y-3 text-white/80">
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Vente sur le lieu de sport</li>
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Outils de conversion (tablette)</li>
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Mesure d'impact de l'offre</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Audit & Pilotage -->
+                <div class="bg-primary p-8 rounded-3xl shadow-lg border border-white/10 relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-orange-500/20 transform scale-0 group-hover:scale-100 transition-transform duration-500 rounded-3xl"></div>
+                    <div class="relative z-10">
+                        <div class="w-14 h-14 rounded-full bg-orange-500 text-white flex items-center justify-center text-2xl mb-6 shadow-lg group-hover:scale-110 transition-transform">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold text-white mb-3">Audit & Pilotage</h3>
+                        <ul class="space-y-3 text-white/80">
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Tableau de bord mensuel</li>
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Suivi exact du R.O.I</li>
+                            <li><i class="fas fa-check text-brandRed mr-3"></i> Audit Marketing & Ventes</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer / Placeholder -->
+    <footer class="bg-primary pt-20 pb-10 border-t border-white/10">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <h2 class="text-3xl font-bold text-white mb-8">Prêt à remplacer vos anciens outils ?</h2>
+            <p class="text-white/60 mb-10 max-w-2xl mx-auto text-lg">
+                Remplacez ce texte temporaire par le contenu exact de votre fichier <strong>"Etude_concurrence"</strong> pour finaliser cette analyse de marché.
+            </p>
+            <p class="text-white/40 text-sm">© 2026 My Sport Business. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

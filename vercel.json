@@ -1,3 +1,9 @@
 {
-  "name": "portail-outils-mss"
+  "rewrites": [
+    { "source": "/", "destination": "/portail_outils_mss.html" },
+    { "source": "/soutenance", "destination": "/portail_soutenance.html" },
+    { "source": "/presentation", "destination": "/soutenance_presentation.html" },
+    { "source": "/etude", "destination": "/landing_etude_concurrence.html" },
+    { "source": "/simulateur", "destination": "/simulateur_capacite.html" }
+  ]
 }

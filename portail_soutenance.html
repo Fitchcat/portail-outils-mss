@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portail Soutenance - My Sport Business</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+        
+        .admin-scroll::-webkit-scrollbar { width: 6px; }
+        .admin-scroll::-webkit-scrollbar-track { background: transparent; }
+        .admin-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .link-button {
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s;
+        }
+        .link-button:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body x-data="portalApp()" class="min-h-screen relative transition-colors duration-300" :style="`background-color: ${settings.bgColor}; color: ${settings.textColor}`">
+
+    <!-- Bouton Admin Flottant -->
+    <button @click="editMode = !editMode" 
+            class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white p-4 rounded-full shadow-2xl hover:bg-slate-800 transition-transform hover:scale-110 flex items-center gap-2 group">
+        <i class="fas fa-cog text-xl"></i>
+        <span class="max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap font-bold" x-text="editMode ? 'Fermer' : 'Éditer le portail'"></span>
+    </button>
+
+    <div class="flex h-screen w-full overflow-hidden">
+        
+        <!-- Panneau d'administration -->
+        <div x-show="editMode" 
+             x-transition:enter="transition ease-out duration-300 transform"
+             x-transition:enter-start="-translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transition ease-in duration-200 transform"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="-translate-x-full"
+             class="w-full md:w-[450px] bg-white text-slate-800 shadow-2xl z-40 h-full flex flex-col absolute md:relative border-r border-slate-200">
+            
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+                <h2 class="text-xl font-bold text-slate-900">Éditeur de Portail</h2>
+                <button @click="resetDefaults" class="text-xs text-red-600 font-semibold hover:bg-red-50 px-2 py-1 rounded">Réinitialiser</button>
+            </div>
+
+            <div class="p-6 overflow-y-auto admin-scroll flex-1 space-y-8">
+                
+                <!-- Design -->
+                <section class="space-y-4">
+                    <h3 class="font-bold text-slate-400 uppercase text-xs tracking-wider border-b pb-2">1. Design & Couleurs</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 text-slate-600">Fond page</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" x-model="settings.bgColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 text-slate-600">Texte page</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" x-model="settings.textColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 text-slate-600">Fond boutons</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" x-model="settings.buttonBgColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold mb-1 text-slate-600">Texte boutons</label>
+                            <div class="flex items-center gap-2">
+                                <input type="color" x-model="settings.buttonTextColor" @input="saveState" class="w-8 h-8 rounded cursor-pointer border-0 p-0">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Header -->
+                <section class="space-y-4">
+                    <h3 class="font-bold text-slate-400 uppercase text-xs tracking-wider border-b pb-2">2. En-tête</h3>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600">URL du Logo (ou fichier local)</label>
+                        <input type="text" x-model="settings.logoUrl" @input="saveState" class="w-full text-sm p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600">Titre</label>
+                        <input type="text" x-model="settings.title" @input="saveState" class="w-full text-sm p-2 border rounded font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1 text-slate-600">Description</label>
+                        <textarea x-model="settings.description" @input="saveState" rows="2" class="w-full text-sm p-2 border rounded"></textarea>
+                    </div>
+                </section>
+
+                <!-- Sections & Liens -->
+                <section class="space-y-6">
+                    <h3 class="font-bold text-slate-400 uppercase text-xs tracking-wider border-b pb-2">3. Sections & Liens</h3>
+                    
+                    <div class="space-y-6" x-ref="categoriesList">
+                        <template x-for="(cat, catIndex) in categories" :key="cat.id">
+                            <div class="bg-slate-100 p-4 rounded-xl border border-slate-200">
+                                
+                                <!-- Header Section -->
+                                <div class="flex justify-between items-center mb-4">
+                                    <input type="text" x-model="cat.title" @input="saveState" placeholder="Titre de la section..." class="font-bold text-slate-800 bg-transparent border-b border-slate-300 focus:border-blue-500 outline-none px-1 w-2/3">
+                                    <div class="flex gap-1">
+                                        <button @click="moveCategoryUp(catIndex)" x-show="catIndex > 0" class="text-slate-400 hover:text-blue-500" title="Monter"><i class="fas fa-arrow-up"></i></button>
+                                        <button @click="moveCategoryDown(catIndex)" x-show="catIndex < categories.length - 1" class="text-slate-400 hover:text-blue-500" title="Descendre"><i class="fas fa-arrow-down"></i></button>
+                                        <button @click="removeCategory(catIndex)" class="text-slate-400 hover:text-red-500 ml-2" title="Supprimer la section"><i class="fas fa-trash"></i></button>
+                                    </div>
+                                </div>
+
+                                <!-- Liens de la section -->
+                                <div class="space-y-3 pl-4 border-l-2 border-slate-200">
+                                    <template x-for="(link, linkIndex) in cat.links" :key="link.id">
+                                        <div class="bg-white p-3 rounded-lg shadow-sm border border-slate-200 relative group">
+                                            <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white">
+                                                <button @click="moveLinkUp(catIndex, linkIndex)" x-show="linkIndex > 0" class="text-slate-400 hover:text-blue-500 text-xs p-1"><i class="fas fa-arrow-up"></i></button>
+                                                <button @click="moveLinkDown(catIndex, linkIndex)" x-show="linkIndex < cat.links.length - 1" class="text-slate-400 hover:text-blue-500 text-xs p-1"><i class="fas fa-arrow-down"></i></button>
+                                                <button @click="removeLink(catIndex, linkIndex)" class="text-slate-400 hover:text-red-500 text-xs p-1"><i class="fas fa-times"></i></button>
+                                            </div>
+                                            
+                                            <div class="grid grid-cols-12 gap-2 mb-2">
+                                                <div class="col-span-3">
+                                                    <label class="block text-[10px] text-slate-500">Icône</label>
+                                                    <input type="text" x-model="link.icon" @input="saveState" placeholder="fas fa-file-pdf" class="w-full text-xs p-1.5 border rounded">
+                                                </div>
+                                                <div class="col-span-9">
+                                                    <label class="block text-[10px] text-slate-500">Titre du bouton</label>
+                                                    <input type="text" x-model="link.title" @input="saveState" class="w-full text-xs p-1.5 border rounded font-semibold">
+                                                </div>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="block text-[10px] text-slate-500">URL / Chemin (ex: /docs/mon-fichier.pdf)</label>
+                                                <input type="text" x-model="link.url" @input="saveState" class="w-full text-xs p-1.5 border rounded text-blue-600">
+                                            </div>
+                                        </div>
+                                    </template>
+                                    
+                                    <button @click="addLink(catIndex)" class="w-full py-2 border-2 border-dashed border-slate-300 text-slate-500 rounded-lg hover:bg-white hover:text-blue-600 text-xs font-semibold">
+                                        + Ajouter un outil à cette section
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <button @click="addCategory" class="w-full py-3 bg-slate-800 text-white rounded-lg hover:bg-slate-700 font-semibold shadow flex items-center justify-center gap-2">
+                        <i class="fas fa-folder-plus"></i> Nouvelle Section
+                    </button>
+                </section>
+
+                <div class="pb-12"></div>
+            </div>
+        </div>
+
+        <!-- Preview (Côté public) -->
+        <div class="flex-1 h-full overflow-y-auto relative w-full">
+            <div class="max-w-[600px] mx-auto px-6 py-16 md:py-20 flex flex-col min-h-full">
+                
+                <!-- En-tête -->
+                <div class="text-center mb-12 w-full">
+                    <div class="w-32 h-32 mx-auto mb-6 rounded-2xl overflow-hidden shadow-xl bg-white p-2" :style="`border: 2px solid ${settings.buttonBgColor}`">
+                        <img :src="settings.logoUrl || 'https://via.placeholder.com/150'" alt="Logo" class="w-full h-full object-contain rounded-xl">
+                    </div>
+                    <h1 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-4" x-text="settings.title"></h1>
+                    <p class="text-lg font-medium opacity-90 leading-relaxed" x-html="settings.description.replace(/\n/g, '<br>')"></p>
+                </div>
+
+                <!-- Sections -->
+                <div class="w-full space-y-12">
+                    <template x-for="cat in categories" :key="cat.id">
+                        <div x-show="cat.links.length > 0 || editMode" class="space-y-4">
+                            <!-- Titre de la section -->
+                            <h2 class="text-xl font-bold tracking-widest uppercase opacity-80 border-b-2 pb-2 mb-6" :style="`border-color: ${settings.textColor}40`" x-text="cat.title"></h2>
+                            
+                            <!-- Liste des liens -->
+                            <div class="space-y-4">
+                                <template x-for="link in cat.links" :key="link.id">
+                                    <a :href="link.url" target="_blank" rel="noopener noreferrer" 
+                                       class="link-button group w-full flex items-center p-5 rounded-2xl shadow-md relative overflow-hidden"
+                                       :style="`background-color: ${settings.buttonBgColor}; color: ${settings.buttonTextColor}`">
+                                        
+                                        <!-- Icone FontAwesome -->
+                                        <div class="w-12 h-12 rounded-full flex items-center justify-center text-2xl shrink-0 opacity-90 mr-4" style="color: #ed2c1a; background-color: #ed2c1a15;">
+                                            <i :class="link.icon || 'fas fa-link'"></i>
+                                        </div>
+                                        
+                                        <!-- Text content -->
+                                        <div class="flex-1 pr-8">
+                                            <h3 class="font-bold text-lg" x-text="link.title"></h3>
+                                        </div>
+
+                                        <!-- Fleche -->
+                                        <div class="absolute right-5 opacity-50 group-hover:opacity-100 transition-all transform group-hover:translate-x-2">
+                                            <i class="fas fa-chevron-right text-xl"></i>
+                                        </div>
+                                    </a>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Footer -->
+                <div class="mt-20 text-center opacity-60 pb-10">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold">
+                        Soutenance My Sport Business &copy; 2026
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const defaultState = {
+            settings: {
+                bgColor: '#f8fafc',
+                textColor: '#0f172a',
+                buttonBgColor: '#ffffff',
+                buttonTextColor: '#0f172a',
+                logoUrl: 'images/MSSLOGO.png',
+                title: 'Portail des Outils',
+                description: 'Tous les supports, PDF et outils liés à la soutenance.',
+            },
+            categories: [
+                {
+                    id: 1,
+                    title: 'Pilotage & Scalabilité',
+                    links: [
+                        { id: 101, icon: 'fas fa-calculator', title: 'Simulateur de Capacité', url: 'simulateur_capacite.html' },
+                        { id: 102, icon: 'fas fa-chart-line', title: 'Dashboard R.O.I (Modèle)', url: '#' }
+                    ]
+                },
+                {
+                    id: 2,
+                    title: 'Acquisition & Conversion',
+                    links: [
+                        { id: 201, icon: 'fas fa-laptop', title: 'Landing Page Optimisée', url: '#' },
+                        { id: 202, icon: 'fas fa-file-pdf', title: 'Affiche QR Code Google', url: '#' }
+                    ]
+                }
+            ]
+        };
+
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('portalApp', () => ({
+                editMode: false,
+                settings: JSON.parse(JSON.stringify(defaultState.settings)),
+                categories: JSON.parse(JSON.stringify(defaultState.categories)),
+
+                init() {
+                    this.loadState();
+                    if(this.categories.length === 0) this.editMode = true;
+                },
+
+                // Gestion des Catégories
+                addCategory() {
+                    this.categories.push({
+                        id: Date.now(),
+                        title: 'Nouvelle Section',
+                        links: []
+                    });
+                    this.saveState();
+                },
+                removeCategory(catIndex) {
+                    if(confirm("Supprimer cette section et tous ses liens ?")) {
+                        this.categories.splice(catIndex, 1);
+                        this.saveState();
+                    }
+                },
+                moveCategoryUp(index) {
+                    if (index > 0) {
+                        [this.categories[index - 1], this.categories[index]] = [this.categories[index], this.categories[index - 1]];
+                        this.saveState();
+                    }
+                },
+                moveCategoryDown(index) {
+                    if (index < this.categories.length - 1) {
+                        [this.categories[index + 1], this.categories[index]] = [this.categories[index], this.categories[index + 1]];
+                        this.saveState();
+                    }
+                },
+
+                // Gestion des Liens
+                addLink(catIndex) {
+                    this.categories[catIndex].links.push({
+                        id: Date.now(),
+                        icon: 'fas fa-file-pdf',
+                        title: 'Nouveau Document',
+                        url: '#'
+                    });
+                    this.saveState();
+                },
+                removeLink(catIndex, linkIndex) {
+                    if(confirm("Supprimer ce lien ?")) {
+                        this.categories[catIndex].links.splice(linkIndex, 1);
+                        this.saveState();
+                    }
+                },
+                moveLinkUp(catIndex, linkIndex) {
+                    if (linkIndex > 0) {
+                        const links = this.categories[catIndex].links;
+                        [links[linkIndex - 1], links[linkIndex]] = [links[linkIndex], links[linkIndex - 1]];
+                        this.saveState();
+                    }
+                },
+                moveLinkDown(catIndex, linkIndex) {
+                    const links = this.categories[catIndex].links;
+                    if (linkIndex < links.length - 1) {
+                        [links[linkIndex + 1], links[linkIndex]] = [links[linkIndex], links[linkIndex + 1]];
+                        this.saveState();
+                    }
+                },
+
+                // Sauvegarde
+                saveState() {
+                    try {
+                        localStorage.setItem('mssSoutenancePortal', JSON.stringify({
+                            settings: this.settings,
+                            categories: this.categories
+                        }));
+                    } catch (e) {}
+                },
+                loadState() {
+                    try {
+                        const saved = localStorage.getItem('mssSoutenancePortal');
+                        if (saved) {
+                            const parsed = JSON.parse(saved);
+                            this.settings = { ...this.settings, ...parsed.settings };
+                            this.categories = parsed.categories || this.categories;
+                        }
+                    } catch (e) {}
+                },
+                resetDefaults() {
+                    if(confirm("Réinitialiser le portail ?")) {
+                        localStorage.removeItem('mssSoutenancePortal');
+                        this.settings = JSON.parse(JSON.stringify(defaultState.settings));
+                        this.categories = JSON.parse(JSON.stringify(defaultState.categories));
+                    }
+                }
+            }));
+        });
+    </script>
+</body>
+</html>

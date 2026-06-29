@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soutenance - Rapport de mission SPOUTNIK S62</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat+Brush&family=Inter:wght@300;400;500;600;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#140c4f',
+                        secondary: '#ed2c1a',
+                        blue: '#254edd',
+                        light: '#797891',
+                        pagebg: '#f2f1f8',
+                        sectionlight: '#f8f9fb',
+                        white: '#ffffff'
+                    },
+                    fontFamily: {
+                        sans: ['"Avenir Next"', 'Avenir', '"Inter"', 'sans-serif'],
+                        heading: ['"Avenir Next"', 'Avenir', '"Inter"', 'sans-serif'],
+                        brush: ['"Caveat Brush"', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f2f1f8;
+            color: #444;
+            overflow: hidden;
+            font-family: 'Avenir Next', 'Avenir', 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
+        }
+        /* Masquer la barre de défilement Chrome/Safari/Webkit */
+        ::-webkit-scrollbar {
+            display: none;
+        }
+        
+        #presentation-wrapper {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #presentation {
+            width: 1920px;
+            height: 1080px;
+            position: relative;
+            background-color: #f2f1f8;
+            overflow: hidden;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            transform-origin: center center;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.8s ease-in-out, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform: scale(1.03);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+            z-index: 10;
+        }
+        
+        /* Modifié pour donner plus d'espace / faire "respirer" */
+        .content-container {
+            padding: 12rem 8% 8rem;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .slide-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .active .slide-up {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .delay-100 { transition-delay: 100ms; }
+        .delay-200 { transition-delay: 200ms; }
+        .delay-300 { transition-delay: 300ms; }
+
+        .accordion-content {
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+        .expandable-item {
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .expandable-item:hover .item-title {
+            color: #2563eb;
+        }
+        .expandable-item.open .accordion-content {
+            max-height: 400px;
+            opacity: 1;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .fragment {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+        .fragment.visible {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .delay-400 { transition-delay: 400ms; }
+        .delay-500 { transition-delay: 500ms; }
+
+        .bg-image-fullscreen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            transform: scale(1.05);
+            transition: transform 15s linear;
+        }
+        .active .bg-image-fullscreen {
+            transform: scale(1);
+        }
+        .overlay-dark {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, rgba(20,12,79,0.85) 100%);
+            z-index: -1;
+        }
+        
+        /* Modifié pour être Absolute et interne à #presentation */
+        .timeline-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 1px 0px rgba(0,0,0,0.05);
+            padding: 1.5rem 4rem; /* Tailles agrandies pour 1920x1080 */
+            transition: all 0.3s;
+        }
+        .timeline-container.dark-mode {
+            background: rgba(0, 0, 0, 0.25);
+            box-shadow: 0 1px 0px rgba(255,255,255,0.08);
+        }
+        .timeline-section {
+            font-weight: 600;
+            font-size: 1.1rem; /* Taille agrandie pour 1920x1080 */
+            color: #797891;
+            cursor: pointer;
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+        .timeline-section.active {
+            color: #ffffff !important;
+            background: #140c4f !important;
+        }
+        .timeline-container.dark-mode .timeline-section.active {
+            color: #000 !important;
+            background: #fff !important;
+        }
+        
+        .font-special-secondary { font-family: 'Caveat Brush', cursive; }
+    </style>
+</head>
+<body>
+
+    <div id="presentation-wrapper">
+        <div id="presentation">
+
+            <!-- La timeline est maintenant DANS le canevas 1920x1080 -->
+            <div class="timeline-container" id="timelineContainer">
+                <div class="flex justify-between items-center max-w-[1600px] mx-auto" id="timeline"></div>
+            </div>
+
+            <!-- Slide 1: Couverture (Photo) -->
+            <div class="slide dark-mode" data-section="Intro">
+                <img src="images/hero_athlete.png" class="bg-image-fullscreen" alt="Background">
+                <div class="overlay-dark"></div>
+                
+                <div class="content-container">
+                    <div class="flex flex-col h-full justify-between pt-12">
+                        
+                        <div class="slide-up text-center mt-12">
+                            <img src="images/MSSLOGO.png" class="h-16 mx-auto mb-10 object-contain" alt="Logo My Sport Session" onerror="this.style.display='none'">
+                            <span class="text-secondary font-bold tracking-[0.3em] uppercase text-sm mb-6 block">Rapport de mission — Spoutnik S62</span>
+                            
+                            <h1 class="text-white text-[4.5rem] font-black leading-[1.1] mb-8 tracking-tight">
+                                L'élargissement vers le <br>marketing opérationnel
+                            </h1>
+                            
+                            <p class="text-2xl text-white font-medium leading-relaxed tracking-wide max-w-[1000px] mx-auto opacity-95">
+                                Un levier de différenciation et d’acquisition durable,<br>
+                                sur le marché très concurrentiel de la réservation sportive.
+                            </p>
+                        </div>
+                        
+                        <div class="slide-up delay-400 flex justify-between items-end pb-8">
+                            <div class="flex items-center gap-5">
+                                <img src="images/pascal_profile.jpg" class="w-14 h-14 rounded-full object-cover shadow-lg border-2 border-white" alt="Pascal Varomme">
+                                <div class="text-left">
+                                    <p class="font-bold text-xl tracking-[0.1em] uppercase text-white mb-1">Pascal Varomme</p>
+                                    <p class="text-secondary text-sm font-bold tracking-[0.2em] uppercase">My Sport Session</p>
+                                </div>
+                            </div>
+                            
+                            <div class="font-special-secondary text-white opacity-80 text-4xl transform -rotate-2">
+                                « L'outil est bien... mais est-ce que vous pouvez nous amener des clients ? »
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2: Qui suis-je ? (Epuré) -->
+            <div class="slide bg-pagebg" data-section="Intro">
+                <div class="content-container max-w-[1400px] mx-auto w-full">
+                    <span class="text-blue font-bold tracking-[0.2em] uppercase text-sm mb-4 block slide-up">Le Candidat</span>
+                    <h1 class="text-[4.5rem] font-black text-primary mb-20 slide-up delay-100 tracking-tight">Qui suis-je ?</h1>
+                    
+                    <div class="grid grid-cols-12 gap-20 items-center slide-up delay-200">
+                        <div class="col-span-4 flex flex-col items-center">
+                            <div class="w-56 h-56 rounded-full bg-gray-100 flex items-center justify-center shadow-2xl relative">
+                                <img src="images/pascal_profile.jpg" class="w-full h-full object-cover rounded-full" alt="Pascal Varomme">
+                                <div class="absolute -bottom-2 -right-2 bg-secondary w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl shadow-lg border-4 border-[#f2f1f8]">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                            </div>
+                            <h3 class="text-2xl font-bold text-primary mt-8 text-center tracking-wide">Pascal Varomme</h3>
+                            <p class="text-lg text-blue font-medium mt-1 tracking-wide">Alternant Growth Hacker</p>
+                        </div>
+                        
+                        <div class="col-span-8">
+                            <div class="bg-white p-12 rounded-3xl shadow-sm border border-gray-100">
+                                <h4 class="text-xl font-bold text-primary mb-8 border-b border-slate-100 pb-4 tracking-wide uppercase">Une triple compétence</h4>
+                                <ul class="space-y-8 text-lg text-gray-800">
+                                    <li class="flex items-start gap-6">
+                                        <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-blue shrink-0 mt-1"><i class="fas fa-lightbulb"></i></div>
+                                        <div>
+                                            <strong class="text-primary block mb-1 text-xl">7 ans d'entrepreneuriat</strong>
+                                            <span class="font-medium leading-relaxed text-gray-600">Gérant d'une entreprise spécialisée dans l'installation et la prestation dans le domaine du son et de l'éclairage scénique.</span>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-6">
+                                        <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-blue shrink-0 mt-1"><i class="fas fa-briefcase"></i></div>
+                                        <div>
+                                            <strong class="text-primary block mb-1 text-xl">27 ans d'expérience</strong>
+                                            <span class="font-medium leading-relaxed text-gray-600">Management d'équipe commerciale et marketing en France et à l'international au sein d'un grand groupe agro-alimentaire.</span>
+                                        </div>
+                                    </li>
+                                    <li class="flex items-start gap-6">
+                                        <div class="w-12 h-12 rounded-full bg-blue/10 flex items-center justify-center text-blue shrink-0 mt-1"><i class="fas fa-laptop-code"></i></div>
+                                        <div>
+                                            <strong class="text-primary block mb-1 text-xl">Expertise Digitale</strong>
+                                            <span class="font-medium leading-relaxed text-gray-600">Reconversion Growth Hacking (Rocket School) pour une approche data-driven.</span>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <div class="mt-8 p-6">
+                                <p class="text-xl text-primary font-medium italic text-center">
+                                    <i class="fas fa-quote-left text-blue opacity-50 mr-3"></i>
+                                    Comprendre les enjeux business d'un dirigeant, construire une stratégie, et l'exécuter de A à Z.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: Plan de la soutenance (Epuré) -->
+            <div class="slide bg-white" data-section="Sommaire">
+                <div class="content-container max-w-[1200px] mx-auto w-full">
+                    <span class="text-secondary font-bold tracking-[0.2em] uppercase text-sm mb-4 block slide-up text-center">Déroulé</span>
+                    <h1 class="text-[4.5rem] font-black text-primary mb-24 slide-up delay-100 text-center tracking-tight">Plan de la soutenance</h1>
+                    
+                    <div class="grid grid-cols-1 gap-12 max-w-[900px] mx-auto slide-up delay-200">
+                        <div class="flex items-center gap-10 group">
+                            <div class="text-4xl font-black text-slate-200 group-hover:text-blue transition-colors w-12 text-right tracking-widest">01</div>
+                            <div class="text-3xl font-medium text-gray-600 group-hover:text-primary transition-colors flex-grow border-b border-dashed border-slate-200 pb-3 tracking-wide">L'entreprise & Contexte</div>
+                        </div>
+                        <div class="flex items-center gap-10 group">
+                            <div class="text-4xl font-black text-slate-200 group-hover:text-blue transition-colors w-12 text-right tracking-widest">02</div>
+                            <div class="text-3xl font-medium text-gray-600 group-hover:text-primary transition-colors flex-grow border-b border-dashed border-slate-200 pb-3 tracking-wide">Le diagnostic complet</div>
+                        </div>
+                        <div class="flex items-center gap-10 group">
+                            <div class="text-4xl font-black text-slate-200 group-hover:text-secondary transition-colors w-12 text-right tracking-widest">03</div>
+                            <div class="text-3xl font-bold text-gray-800 group-hover:text-secondary transition-colors flex-grow border-b border-dashed border-slate-200 pb-3 tracking-wide">La Problématique</div>
+                        </div>
+                        <div class="flex items-center gap-10 group">
+                            <div class="text-4xl font-black text-slate-200 group-hover:text-blue transition-colors w-12 text-right tracking-widest">04</div>
+                            <div class="text-3xl font-medium text-gray-600 group-hover:text-primary transition-colors flex-grow border-b border-dashed border-slate-200 pb-3 tracking-wide">Le Plan d'action & Résultats</div>
+                        </div>
+                        <div class="flex items-center gap-10 group">
+                            <div class="text-4xl font-black text-slate-200 group-hover:text-blue transition-colors w-12 text-right tracking-widest">05</div>
+                            <div class="text-3xl font-medium text-gray-600 group-hover:text-primary transition-colors flex-grow pb-3 tracking-wide">Bilan & Perspectives</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4: L'entreprise & Contexte (Photo) -->
+            <div class="slide dark-mode" data-section="Diagnostic">
+                <img src="images/empty_gym.png" class="bg-image-fullscreen" alt="Background Gym">
+                <div class="overlay-dark" style="background: linear-gradient(to right, rgba(20,12,79,0.95) 0%, rgba(0,0,0,0.6) 100%);"></div>
+                
+                <div class="content-container">
+                    <div class="slide-up">
+                        <span class="text-secondary font-bold tracking-[0.3em] uppercase text-sm mb-6 block">01 — L'entreprise</span>
+                        <h1 class="text-white text-[5rem] font-black leading-[1.1] mb-16 tracking-tight">My Sport Session en 2025</h1>
+                    </div>
+                    
+                    <div class="grid grid-cols-12 gap-16 slide-up delay-200 mb-16">
+                        <div class="col-span-5 flex flex-col justify-center">
+                            <p class="text-2xl text-white font-medium leading-relaxed tracking-wide opacity-95 mb-8">
+                                Un logiciel SaaS de réservation dédié aux indépendants, fondé en 2019 par un ancien cadre commercial.
+                            </p>
+                            <p class="text-xl text-white font-normal leading-relaxed tracking-wide border-l-4 border-secondary pl-6">
+                                Une équipe resserrée mais des fondations vieillissantes (site web) et un arrêt net de l'acquisition suite au départ des bizdev.
+                            </p>
+                        </div>
+                        <div class="col-span-7 flex flex-col gap-6">
+                            <div class="flex gap-6">
+                                <div class="flex-1 bg-white/10 backdrop-blur-md border border-white/20 p-8 rounded-[2rem] flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-300">
+                                    <div class="text-[4rem] font-black text-white mb-1 leading-none">41</div>
+                                    <div class="text-sm font-bold text-gray-300 uppercase tracking-widest text-center">Clients Actifs</div>
+                                </div>
+                                <div class="flex-1 bg-green-500/10 backdrop-blur-md border border-green-400/30 p-8 rounded-[2rem] flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-300">
+                                    <div class="text-[4rem] font-black text-green-400 mb-1 leading-none">19<span class="text-2xl ml-1">k€</span></div>
+                                    <div class="text-sm font-bold text-green-200 uppercase tracking-widest text-center">CA Annuel</div>
+                                </div>
+                                <div class="flex-1 bg-red-500/10 backdrop-blur-md border border-red-400/30 p-8 rounded-[2rem] flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-300">
+                                    <div class="text-[4rem] font-black text-red-400 mb-1 leading-none">122<span class="text-2xl ml-1">k€</span></div>
+                                    <div class="text-sm font-bold text-red-200 uppercase tracking-widest text-center">Coûts estimés</div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-red-600/20 backdrop-blur-md border border-red-500/50 p-8 rounded-[2rem] flex items-center justify-between shadow-2xl transform hover:scale-105 transition-transform duration-300 mt-2">
+                                <div class="text-left flex-1 pr-6">
+                                    <h3 class="text-red-300 font-bold uppercase tracking-widest mb-2 text-sm flex items-center gap-2">
+                                        <i class="fas fa-exclamation-triangle"></i> Modèle Structurellement Déficitaire
+                                    </h3>
+                                    <p class="text-white text-lg font-medium opacity-90 leading-snug">L'entreprise brûle du cash : les charges (salaires, tech, compta) représentent <strong>6,4 fois</strong> les revenus.</p>
+                                </div>
+                                <div class="text-[3.5rem] font-black text-red-500 leading-none shrink-0">-103<span class="text-2xl ml-1">k€</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: Diagnostic Externe & Interne (Split-screen) -->
+            <div class="slide bg-white flex flex-row !p-0" data-section="Diagnostic">
+                <div class="w-1/2 px-16 py-16 bg-pagebg flex flex-col justify-center h-full">
+                    <span class="text-secondary font-bold tracking-[0.2em] uppercase text-sm mb-4 block slide-up">02 — Externe : Le marché des logiciels</span>
+                    <h2 class="text-[3rem] font-black text-primary mb-6 slide-up delay-100 leading-[1.1] tracking-tight">Une saturation concurrentielle</h2>
+                    
+                    <p class="text-xl text-gray-600 mb-8 slide-up delay-200 font-medium">
+                        My Sport Session peine à se différencier technologiquement face aux leaders bien implantés.
+                    </p>
+
+                    <!-- Mini Carte de Positionnement -->
+                    <div class="slide-up delay-300 bg-white rounded-3xl p-8 border border-slate-200 shadow-sm mb-6 max-w-[550px] mx-auto w-full">
+                        <div class="text-center font-bold text-gray-700 mb-8 text-sm uppercase tracking-widest">Le marché de la réservation (2025)</div>
+                        
+                        <!-- Conteneur global du graphique avec padding interne pour bloquer les débordements -->
+                        <div class="relative w-full pl-20 pb-12 pr-4">
+                            
+                            <!-- Lignes des Axes (contenues dans le padding) -->
+                            <div class="absolute left-20 top-0 bottom-12 w-0.5 bg-slate-300"></div>
+                            <div class="absolute left-20 right-4 bottom-12 h-0.5 bg-slate-300"></div>
+                            
+                            <!-- Labels Axe Y (contenus dans le padding gauche) -->
+                            <div class="absolute left-0 top-0 w-20 pr-2 text-[9px] font-bold text-slate-500 text-left leading-tight">
+                                COÛT /<br>COMMISSIONS<br>ÉLEVÉS
+                            </div>
+                            <div class="absolute left-0 bottom-12 w-20 pr-2 text-[9px] font-bold text-slate-500 text-left leading-tight translate-y-1/2">
+                                PRIX<br>ABORDABLE
+                            </div>
+                            
+                            <!-- Labels Axe X (contenus dans le padding bas) -->
+                            <div class="absolute left-20 bottom-0 pt-3 text-[9px] font-bold text-slate-500 leading-tight">
+                                RÉSERVATION<br>SIMPLE
+                            </div>
+                            <div class="absolute right-4 bottom-0 pt-3 text-[9px] font-bold text-slate-500 text-right leading-tight">
+                                GESTION COMPLÈTE<br>& OPTIONS MARKETING
+                            </div>
+
+                            <!-- Zone de tracé (Plot Area) -->
+                            <div class="relative w-full aspect-[16/9] border-t border-r border-slate-100">
+                                <!-- Grille -->
+                                <div class="absolute inset-0 opacity-20 pointer-events-none" style="background-image: linear-gradient(slate-300 1px, transparent 1px), linear-gradient(90deg, slate-300 1px, transparent 1px); background-size: 10% 10%;"></div>
+                                
+                                <!-- B-Sport / Deciplus -->
+                                <div class="absolute left-[85%] top-[25%] transform -translate-x-1/2 -translate-y-1/2 group z-20">
+                                    <div class="w-12 h-12 rounded-full bg-blue/10 border-2 border-blue flex flex-col items-center justify-center shadow-sm">
+                                        <i class="fas fa-industry text-blue text-base"></i>
+                                    </div>
+                                    <div class="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-max text-center">
+                                        <p class="font-bold text-[9px] text-slate-700">SaaS Avancés</p>
+                                        <p class="text-[8px] text-slate-500">Deciplus, B-Sport</p>
+                                    </div>
+                                </div>
+
+                                <!-- Marketplaces -->
+                                <div class="absolute left-[50%] top-[15%] transform -translate-x-1/2 -translate-y-1/2 group z-20">
+                                    <div class="w-12 h-12 rounded-full bg-yellow-50 border-2 border-yellow-500 flex flex-col items-center justify-center shadow-sm">
+                                        <i class="fas fa-ticket-alt text-yellow-600 text-base"></i>
+                                    </div>
+                                    <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 w-max text-center">
+                                        <p class="font-bold text-[9px] text-slate-700">Marketplaces</p>
+                                        <p class="text-[8px] text-slate-500">Fun Booker, Manawa</p>
+                                    </div>
+                                </div>
+
+                                <!-- Reservio -->
+                                <div class="absolute left-[15%] bottom-[10%] transform -translate-x-1/2 translate-y-1/2 group z-20">
+                                    <div class="w-10 h-10 rounded-full bg-slate-100 border-2 border-slate-400 flex flex-col items-center justify-center shadow-sm">
+                                        <i class="fas fa-calendar-alt text-slate-500 text-xs"></i>
+                                    </div>
+                                    <div class="absolute top-1/2 left-full -translate-y-1/2 ml-2 w-max text-left">
+                                        <p class="font-bold text-[9px] text-slate-700">Outils Simples</p>
+                                        <p class="text-[8px] text-slate-500">Reservio</p>
+                                    </div>
+                                </div>
+
+                                <!-- MSS -->
+                                <div class="absolute left-[35%] bottom-[30%] transform -translate-x-1/2 translate-y-1/2 z-30">
+                                    <div class="relative w-12 h-12 rounded-full bg-primary text-white flex flex-col items-center justify-center shadow-lg border-2 border-white">
+                                        <span class="font-black text-[9px] leading-tight text-center">MSS</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Flèche Signal Faible (Horizontale) -->
+                                <div class="absolute left-[43%] bottom-[30%] w-[120px] border-b-2 border-dashed border-red-500 opacity-70 pointer-events-none z-20 flex items-center">
+                                    <div class="absolute -right-2 text-red-500 text-sm transform translate-x-1/2"><i class="fas fa-caret-right"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue/10 border-l-4 border-blue p-4 rounded-r-xl slide-up delay-400 max-w-[500px] mx-auto w-full">
+                        <p class="text-primary font-medium text-sm flex items-start gap-3">
+                            <i class="fas fa-satellite-dish text-blue mt-1"></i>
+                            <span><strong class="text-blue uppercase text-xs tracking-widest block mb-1">Signaux d'évolution</strong> Les concurrents commencent à intégrer des modules marketing à leur logiciel de réservation.</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="w-1/2 px-24 py-32 bg-white flex flex-col justify-center h-full border-l border-gray-100">
+                    <span class="text-blue font-bold tracking-[0.2em] uppercase text-sm mb-6 block slide-up delay-100">02 — Interne : Le Mur du CAC</span>
+                    <h2 class="text-[3.5rem] font-black text-primary mb-8 slide-up delay-200 leading-[1.1] tracking-tight">Le problème est la rétention</h2>
+                    
+                    <div class="bg-red-50 p-12 rounded-[2rem] border border-red-100 slide-up delay-300 mt-8">
+                        <div class="flex justify-between items-center mb-10">
+                            <div>
+                                <div class="text-red-800/60 text-sm font-bold uppercase tracking-widest mb-2">Coût d'Acquisition (CAC)</div>
+                                <div class="text-[4rem] font-black text-red-600 leading-none">455 €</div>
+                            </div>
+                            <div class="text-5xl text-red-800/50 font-medium px-8">vs</div>
+                            <div class="text-right">
+                                <div class="text-gray-500 text-sm font-bold uppercase tracking-widest mb-2">Valeur Vie Client (LTV)</div>
+                                <div class="text-[4rem] font-black text-green-600 leading-none">460 €</div>
+                            </div>
+                        </div>
+                        <p class="text-2xl text-red-900 font-medium border-t border-red-200 pt-8 leading-relaxed">
+                            Durée de vie moyenne : <strong class="font-black text-red-700">14 mois</strong>.<br>
+                            <span class="text-xl mt-2 block opacity-80">Les clients résilient car l'outil SaaS seul ne génère pas de chiffre d'affaires supplémentaire.</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 6: La problématique (Photo) -->
+            <div class="slide dark-mode" data-section="Problématique">
+                <img src="images/hero.png" class="bg-image-fullscreen" alt="Background Problematique">
+                <div class="overlay-dark" style="background: linear-gradient(to bottom, rgba(20,12,79,0.7) 0%, rgba(0,0,0,0.9) 100%);"></div>
+                
+                <div class="content-container items-center justify-center text-center">
+                    <div class="slide-up max-w-[1200px]">
+                        <span class="text-secondary font-bold tracking-[0.3em] uppercase text-sm mb-12 block">03 — La Problématique Isolée</span>
+                        <p class="text-3xl text-gray-300 font-medium tracking-wide mb-8">L'insight remonté systématiquement du terrain :</p>
+                        
+                        <h1 class="text-white text-[5.5rem] font-black leading-[1.1] mb-16 tracking-tight">
+                            « L'outil est bien... mais est-ce que vous pouvez nous amener des clients ? »
+                        </h1>
+                    </div>
+                    
+                    <div class="slide-up delay-300 max-w-[1000px] bg-white/10 backdrop-blur-md border border-white/20 p-10 rounded-[2rem]">
+                        <p class="text-3xl text-white font-medium leading-relaxed tracking-wide">
+                            Un accompagnement <strong class="text-secondary font-bold">marketing et commercial réellement opérationnel</strong> ne pourrait-il pas devenir, pour My Sport Session, le levier de différenciation qui lui manque ?
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 7: Le modèle "Done For You" (Epuré) -->
+            <div class="slide bg-pagebg" data-section="Plan d'action">
+                <div class="content-container max-w-[1600px] mx-auto w-full">
+                    <span class="text-blue font-bold tracking-[0.2em] uppercase text-sm mb-4 block slide-up">04 — Plan d'action : La Solution</span>
+                    <h1 class="text-[4.5rem] font-black text-primary mb-16 slide-up delay-100 tracking-tight">Le Modèle "Done For You"</h1>
+                    
+                    <div class="grid grid-cols-3 gap-10 slide-up delay-200">
+                        <!-- Modèle 1 : DIY -->
+                        <div class="bg-white p-12 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center opacity-60">
+                            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 text-4xl mb-8"><i class="fas fa-hammer"></i></div>
+                            <h3 class="text-3xl font-bold text-gray-700 mb-2">Modèle D.I.Y</h3>
+                            <p class="text-xl font-medium text-gray-500 mb-8">Do It Yourself</p>
+                            <div class="h-px w-full bg-gray-100 mb-8"></div>
+                            <ul class="text-left space-y-6 w-full">
+                                <li class="flex items-center gap-4 text-red-500 font-medium text-xl"><i class="fas fa-times-circle"></i> Chronophage</li>
+                                <li class="flex items-center gap-4 text-red-500 font-medium text-xl"><i class="fas fa-times-circle"></i> Résultats aléatoires</li>
+                            </ul>
+                        </div>
+
+                        <!-- Modèle 2 : DFY (Le bon) -->
+                        <div class="bg-primary p-12 rounded-3xl shadow-2xl border-4 border-blue flex flex-col items-center text-center transform scale-110 z-10 relative">
+                            <div class="absolute -top-5 bg-secondary text-white font-bold tracking-widest uppercase py-2 px-6 rounded-full text-sm">Le compromis idéal</div>
+                            <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mb-8 overflow-hidden shadow-lg p-2">
+                                <img src="images/logoMSBLarge.jpeg" class="w-full h-full object-contain rounded-full" alt="Logo MSB">
+                            </div>
+                            <h3 class="text-4xl font-black text-white mb-2">Modèle D.F.Y</h3>
+                            <p class="text-xl font-bold text-blue mb-8 tracking-wide">Done For You</p>
+                            <div class="h-px w-full bg-blue/30 mb-8"></div>
+                            <ul class="text-left space-y-6 w-full mb-10">
+                                <li class="flex items-center gap-4 text-green-400 font-medium text-xl"><i class="fas fa-check-circle"></i> Exécution experte</li>
+                                <li class="flex items-center gap-4 text-green-400 font-medium text-xl"><i class="fas fa-check-circle"></i> Budget maîtrisé</li>
+                                <li class="flex items-center gap-4 text-green-400 font-medium text-xl"><i class="fas fa-check-circle"></i> Focus sur le métier</li>
+                            </ul>
+                            <div class="bg-white/10 w-full rounded-2xl p-6">
+                                <div class="text-white/70 text-sm font-bold uppercase tracking-wider mb-4">Pricing</div>
+                                <div class="flex justify-between items-center px-2">
+                                    <div class="text-left"><span class="block text-2xl font-bold text-white">250€</span><span class="text-sm text-white font-medium opacity-90">/mois (POC)</span></div>
+                                    <div class="text-3xl text-white/30"><i class="fas fa-arrow-right"></i></div>
+                                    <div class="text-right"><span class="block text-3xl font-black text-secondary">390€</span><span class="text-sm text-white font-medium opacity-90">/mois (Lancement)</span></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Modèle 3 : Agence -->
+                        <div class="bg-white p-12 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center text-center opacity-60">
+                            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center text-gray-500 text-4xl mb-8"><i class="fas fa-building"></i></div>
+                            <h3 class="text-3xl font-bold text-gray-700 mb-2">Agence Classique</h3>
+                            <p class="text-xl font-medium text-gray-500 mb-8">Externalisation</p>
+                            <div class="h-px w-full bg-gray-100 mb-8"></div>
+                            <ul class="text-left space-y-6 w-full">
+                                <li class="flex items-center gap-4 text-green-500 font-medium text-xl"><i class="fas fa-check-circle"></i> Très pro</li>
+                                <li class="flex items-center gap-4 text-red-500 font-medium text-xl"><i class="fas fa-times-circle"></i> Inabordable (> 1000€ / mois)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 7b: L'Écosystème de conversion -->
+            <div class="slide bg-pagebg" data-section="Plan d'action">
+                <div class="content-container max-w-[1600px] mx-auto w-full flex flex-col h-full justify-center">
+                    <div class="text-center mb-8">
+                        <span class="text-blue font-bold tracking-[0.2em] uppercase text-sm mb-2 block slide-up">04 — L'Offre</span>
+                        <h1 class="text-[4.5rem] font-black text-primary slide-up delay-100 tracking-tight">Le Système de Conversion</h1>
+                    </div>
+                    
+                    <div class="flex-1 w-full flex items-center justify-center mt-2 relative">
+                        
+                        <!-- Conteneur Circulaire Principal -->
+                        <div class="relative w-[1200px] h-[750px] mx-auto">
+                            
+                            <style>
+                                @keyframes gear-spin {
+                                    from { transform: rotate(0deg); }
+                                    to { transform: rotate(360deg); }
+                                }
+                            </style>
+
+                            <!-- SVG Trait Circulaire (Fond gris moyen) -->
+                            <svg class="absolute inset-0 w-full h-full pointer-events-none z-0 slide-up delay-200" viewBox="0 0 1200 750">
+                                <circle cx="600" cy="375" r="300" fill="none" stroke="#9ca3af" stroke-width="4" stroke-dasharray="15, 15" opacity="0.5" />
+                            </svg>
+
+                            <!-- LE COEUR (Roue dentée Gris plus clair) -->
+                            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-[300px] h-[300px] flex items-center justify-center">
+                                
+                                <!-- Engrenage SVG parfait qui tourne (12 dents trapézoïdales) -->
+                                <div class="absolute inset-[-10px] drop-shadow-xl z-0 slide-up delay-200" style="color: #64748b; animation: gear-spin 25s linear infinite;">
+                                    <svg viewBox="0 0 200 200" class="w-full h-full" fill="currentColor">
+                                        <g>
+                                            <!-- Corps Plein -->
+                                            <circle cx="100" cy="100" r="75" />
+                                            <!-- 12 Dents Classiques -->
+                                            <polygon points="93,12 107,12 112,32 88,32" />
+                                            <polygon points="93,12 107,12 112,32 88,32" transform="rotate(30 100 100)" />
+                                            <polygon points="93,12 107,12 112,32 88,32" transform="rotate(60 100 100)" />
+                                            <polygon points="93,12 107,12 112,32 88,32" transform="rotate(90 100 100)" />
+                                            <polygon points="93,12 107,12 112,32 88,32" transform="rotate(120 100 100)" />
+                                            <polygon points="93,12 107,12 112,32 88,32" transform="rotate(150 100 100)" />
+                                            <polygon points="93,12 107,12 112,32 88,32" transform="rotate(180 100 100)" />
+                                            <polygon points="93,12 107,12 112,32 88,32" transform="rotate(210 100 100)" />
+                                            <polygon points="93,12 107,12 112,32 88,32" transform="rotate(240 100 100)" />
+                                            <polygon points="93,12 107,12 112,32 88,32" transform="rotate(270 100 100)" />
+                                            <polygon points="93,12 107,12 112,32 88,32" transform="rotate(300 100 100)" />
+                                            <polygon points="93,12 107,12 112,32 88,32" transform="rotate(330 100 100)" />
+                                        </g>
+                                    </svg>
+                                </div>
+                                
+                                <!-- Texte Statique -->
+                                <h2 class="text-[28px] font-black text-center leading-tight tracking-wide uppercase text-white relative z-10 px-4 drop-shadow-md slide-up delay-200">
+                                    Système<br>de<br>Conversion
+                                </h2>
+                            </div>
+
+                            <!-- 1. AUDITS (Haut Centre) -->
+                            <div class="absolute left-1/2 top-0 -translate-x-1/2 z-30">
+                                <div class="bg-white p-6 rounded-3xl shadow-xl border-t-8 border-red-500 w-[380px] text-center relative mt-2 fragment">
+                                    <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-red-500 text-white rounded-full flex items-center justify-center text-2xl font-black shadow-lg ring-4 ring-white z-10">1</div>
+                                    <h3 class="text-2xl font-black text-red-500 uppercase tracking-widest mt-4 mb-3">Audits</h3>
+                                    <ul class="text-left text-gray-600 space-y-3 text-lg font-medium px-4">
+                                        <li class="flex items-center"><i class="fas fa-search-dollar text-red-500 w-8 text-xl"></i> Audit Business</li>
+                                        <li class="flex items-center"><i class="fas fa-bullseye text-red-500 w-8 text-xl"></i> Audit Marketing & Ventes</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- 2. ACQUISITION (Droite Milieu-Haut) -->
+                            <div class="absolute right-[2%] top-[25%] z-30">
+                                <div class="bg-white p-6 rounded-3xl shadow-xl border-t-8 border-blue w-[380px] text-center relative mt-8 fragment">
+                                    <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-blue text-white rounded-full flex items-center justify-center text-2xl font-black shadow-lg ring-4 ring-white z-10">2</div>
+                                    <h3 class="text-2xl font-black text-blue uppercase tracking-widest mt-4 mb-3">Acquisition</h3>
+                                    <ul class="text-left text-gray-600 space-y-3 text-lg font-medium px-4">
+                                        <li class="flex items-center"><i class="fab fa-google text-blue w-8 text-xl"></i> Page Google Business</li>
+                                        <li class="flex items-center"><i class="fas fa-hashtag text-blue w-8 text-xl"></i> Posts Réseaux Sociaux</li>
+                                        <li class="flex items-center"><i class="fas fa-ad text-blue w-8 text-xl"></i> Publicités (Ads)</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- 3. CONVERSION (Bas Droite) -->
+                            <div class="absolute right-[10%] bottom-6 z-30">
+                                <div class="bg-white p-6 rounded-3xl shadow-xl border-t-8 w-[380px] text-center relative mt-8 fragment" style="border-top-color: #a855f7;">
+                                    <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16 text-white rounded-full flex items-center justify-center text-2xl font-black shadow-lg ring-4 ring-white z-10" style="background-color: #a855f7;">3</div>
+                                    <h3 class="text-2xl font-black uppercase tracking-widest mt-4 mb-3" style="color: #a855f7;">Conversion</h3>
+                                    <ul class="text-left text-gray-600 space-y-3 text-lg font-medium px-4">
+                                        <li class="flex items-center"><i class="fas fa-laptop-code w-8 text-xl" style="color: #a855f7;"></i> Site Web Optimisé</li>
+                                        <li class="flex items-center"><i class="fas fa-store w-8 text-xl" style="color: #a855f7;"></i> Process Vente sur site</li>
+                                        <li class="flex items-center"><i class="fas fa-chart-bar w-8 text-xl" style="color: #a855f7;"></i> Analytics Intégrés</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- 4. RÉTENTION (Bas Gauche) -->
+                            <div class="absolute left-[10%] bottom-6 z-30">
+                                <div class="bg-white p-6 rounded-3xl shadow-xl border-t-8 border-green-500 w-[380px] text-center relative mt-8 fragment">
+                                    <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center text-2xl font-black shadow-lg ring-4 ring-white z-10">4</div>
+                                    <h3 class="text-2xl font-black text-green-500 uppercase tracking-widest mt-4 mb-3">Rétention</h3>
+                                    <ul class="text-left text-gray-600 space-y-3 text-lg font-medium px-4">
+                                        <li class="flex items-center"><i class="fas fa-database text-green-500 w-8 text-xl"></i> Gestion du CRM</li>
+                                        <li class="flex items-center"><i class="fas fa-star text-green-500 w-8 text-xl"></i> Réponses auto. aux avis</li>
+                                        <li class="flex items-center"><i class="fas fa-envelope-open-text text-green-500 w-8 text-xl"></i> Séquences emails filtrées</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- 5. PILOTAGE (Gauche Milieu-Haut) -->
+                            <div class="absolute left-[2%] top-[25%] z-30">
+                                <div class="bg-white p-6 rounded-3xl shadow-xl border-t-8 w-[380px] text-center relative mt-8 fragment" style="border-top-color: #f97316;">
+                                    <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16 text-white rounded-full flex items-center justify-center text-2xl font-black shadow-lg ring-4 ring-white z-10" style="background-color: #f97316;">5</div>
+                                    <h3 class="text-2xl font-black uppercase tracking-widest mt-4 mb-3" style="color: #f97316;">Pilotage</h3>
+                                    <ul class="text-left text-gray-600 space-y-3 text-lg font-medium px-4">
+                                        <li class="flex items-center"><i class="fas fa-chart-line w-8 text-xl" style="color: #f97316;"></i> Tableaux de bord persos</li>
+                                        <li class="flex items-center"><i class="fas fa-bullseye w-8 text-xl" style="color: #f97316;"></i> Mesure stricte du R.O.I</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 8: Action 1 - Aquabike Center (Roue Interactive) -->
+            <div class="slide dark-mode" data-section="Plan d'action">
+                <img src="images/hero.png" class="bg-image-fullscreen" alt="Background Aquabike">
+                <div class="overlay-dark" style="background: linear-gradient(to right, rgba(20,12,79,0.98) 0%, rgba(20,12,79,0.85) 50%, rgba(20,12,79,0.4) 100%);"></div>
+                
+                <div class="content-container flex flex-col justify-center items-center h-full w-full">
+                    
+                    <!-- Header -->
+                    <div class="flex items-center gap-8 slide-up w-full max-w-[1200px] justify-between relative z-50 mb-0">
+                        <div>
+                            <span class="text-secondary font-bold tracking-[0.3em] uppercase text-sm mb-4 block">04 — Preuve de concept (POC)</span>
+                            <h1 class="text-white text-[3rem] font-black leading-[1.1] tracking-tight m-0 flex items-center gap-6">
+                                <img src="images/logoAquabikeblanc.png" class="h-[5rem] object-contain drop-shadow-xl" alt="Logo" onerror="this.style.display='none'">
+                                Système Déployé
+                            </h1>
+                        </div>
+                        <div class="text-gray-300 text-lg font-medium text-right max-w-md italic opacity-80 border-l-4 border-secondary pl-4">
+                            Cliquez sur chaque étape avec la souris pour dévoiler les actions réalisées.
+                        </div>
+                    </div>
+
+                    <!-- Conteneur Circulaire Principal -->
+                    <div class="relative w-[1200px] h-[750px] mx-auto transform scale-90 origin-center -mt-6">
+                        
+                        <!-- SVG Trait Circulaire (Bleu Aquabike) -->
+                        <svg class="absolute inset-0 w-full h-full pointer-events-none z-0 slide-up delay-100" viewBox="0 0 1200 750">
+                            <circle cx="600" cy="375" r="300" fill="none" stroke="#2563eb" stroke-width="4" stroke-dasharray="15, 15" opacity="0.6" />
+                        </svg>
+
+                        <!-- LE COEUR (Roue dentée Bleue) -->
+                        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-[300px] h-[300px] flex items-center justify-center">
+                            <div class="absolute inset-[-10px] drop-shadow-xl z-0 slide-up delay-200" style="color: #64748b; animation: gear-spin 25s linear infinite;">
+                                <svg viewBox="0 0 200 200" class="w-full h-full" fill="currentColor">
+                                    <g>
+                                        <!-- Corps Plein -->
+                                        <circle cx="100" cy="100" r="75" />
+                                        <!-- 12 Dents Classiques -->
+                                        <polygon points="93,12 107,12 112,32 88,32" />
+                                        <polygon points="93,12 107,12 112,32 88,32" transform="rotate(30 100 100)" />
+                                        <polygon points="93,12 107,12 112,32 88,32" transform="rotate(60 100 100)" />
+                                        <polygon points="93,12 107,12 112,32 88,32" transform="rotate(90 100 100)" />
+                                        <polygon points="93,12 107,12 112,32 88,32" transform="rotate(120 100 100)" />
+                                        <polygon points="93,12 107,12 112,32 88,32" transform="rotate(150 100 100)" />
+                                        <polygon points="93,12 107,12 112,32 88,32" transform="rotate(180 100 100)" />
+                                        <polygon points="93,12 107,12 112,32 88,32" transform="rotate(210 100 100)" />
+                                        <polygon points="93,12 107,12 112,32 88,32" transform="rotate(240 100 100)" />
+                                        <polygon points="93,12 107,12 112,32 88,32" transform="rotate(270 100 100)" />
+                                        <polygon points="93,12 107,12 112,32 88,32" transform="rotate(300 100 100)" />
+                                        <polygon points="93,12 107,12 112,32 88,32" transform="rotate(330 100 100)" />
+                                    </g>
+                                </svg>
+                            </div>
+                            <div class="w-[200px] h-[200px] rounded-full shadow-[inset_0_4px_20px_rgba(0,0,0,0.5)] z-10 flex flex-col items-center justify-center text-center p-6 bg-gradient-to-br from-blue-900 to-[#0a0628] border-4 border-blue-500/50 slide-up delay-300">
+                                <i class="fas fa-water text-3xl text-blue-400 mb-2"></i>
+                                <h2 class="text-2xl font-black text-white leading-tight">Aquabike<br>Center</h2>
+                            </div>
+                        </div>
+
+                        <!-- 1. AUDITS (Haut Centre) -->
+                        <div class="absolute left-1/2 top-[-20px] -translate-x-1/2 z-30 card-container">
+                            <div class="bg-white p-6 rounded-3xl shadow-xl border-t-8 border-red-500 w-[350px] text-center relative mt-2 slide-up delay-[400ms]">
+                                <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-red-500 text-white rounded-full flex items-center justify-center text-2xl font-black shadow-lg ring-4 ring-white z-10">1</div>
+                                <h3 class="text-2xl font-black text-red-500 uppercase tracking-widest mt-4 mb-3">Audits</h3>
+                                <ul class="text-left text-gray-600 space-y-3 text-lg font-medium px-4">
+                                    <li class="flex flex-col expandable-item">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-check-circle text-green-500 w-8 text-xl"></i>
+                                            <span class="item-title font-bold text-gray-800">Audit Business</span>
+                                        </div>
+                                        <div class="accordion-content">
+                                            <div class="pl-11 text-sm text-gray-600 italic">Analyse de la situation de l'Aquabike Center.</div>
+                                        </div>
+                                    </li>
+                                    <li class="flex flex-col expandable-item">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-check-circle text-green-500 w-8 text-xl"></i>
+                                            <span class="item-title font-bold text-gray-800">Audit Marketing & Ventes</span>
+                                        </div>
+                                        <div class="accordion-content">
+                                            <div class="pl-11 text-sm text-gray-600 italic">Revue complète du positionnement, de l'acquisition à la rétention.</div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- 2. ACQUISITION (Droite Milieu-Haut) -->
+                        <div class="absolute right-[1%] top-[15%] z-30 card-container">
+                            <div class="bg-white p-6 rounded-3xl shadow-xl border-t-8 border-blue w-[350px] text-center relative mt-8 slide-up delay-[500ms]">
+                                <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-blue text-white rounded-full flex items-center justify-center text-2xl font-black shadow-lg ring-4 ring-white z-10">2</div>
+                                <h3 class="text-2xl font-black text-blue uppercase tracking-widest mt-4 mb-3">Acquisition</h3>
+                                <ul class="text-left text-gray-600 space-y-3 text-lg font-medium px-4">
+                                    <li class="flex flex-col expandable-item">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-check-circle text-green-500 w-8 text-xl"></i>
+                                            <span class="item-title font-bold text-gray-800">Page Google Business</span>
+                                        </div>
+                                        <div class="accordion-content">
+                                            <ul class="pl-11 text-sm text-gray-600 list-disc space-y-1">
+                                                <li>Optimisé la description</li>
+                                                <li>Rajouté des descriptions de services</li>
+                                                <li>Lien vers le système de réservation</li>
+                                                <li>Augmenté le nombre de photos</li>
+                                                <li>Rajouté une vidéo</li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                    <li class="flex flex-col expandable-item">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-check-circle text-green-500 w-8 text-xl"></i>
+                                            <span class="item-title font-bold text-gray-800">Posts Réseaux Sociaux</span>
+                                        </div>
+                                        <div class="accordion-content">
+                                            <div class="pl-11 text-sm text-gray-600">Création de publications régulières.</div>
+                                        </div>
+                                    </li>
+                                    <li class="flex flex-col expandable-item">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-check-circle text-green-500 w-8 text-xl"></i>
+                                            <span class="item-title font-bold text-gray-800">Publicités (Ads)</span>
+                                        </div>
+                                        <div class="accordion-content">
+                                            <ul class="pl-11 text-sm text-gray-600 list-disc space-y-1">
+                                                <li>Juin : Post boosté sur Instagram.</li>
+                                                <li>Juillet : Lancement du studio Loft 155.</li>
+                                                <li>Juillet : Campagne été (13 s. / 130€).</li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- 3. CONVERSION (Bas Droite) -->
+                        <div class="absolute right-[8%] bottom-[-40px] z-30 card-container">
+                            <div class="bg-white p-6 rounded-3xl shadow-xl border-t-8 w-[350px] text-center relative mt-8 slide-up delay-[600ms]" style="border-top-color: #a855f7;">
+                                <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16 text-white rounded-full flex items-center justify-center text-2xl font-black shadow-lg ring-4 ring-white z-10" style="background-color: #a855f7;">3</div>
+                                <h3 class="text-2xl font-black uppercase tracking-widest mt-4 mb-3" style="color: #a855f7;">Conversion</h3>
+                                <ul class="text-left text-gray-600 space-y-3 text-lg font-medium px-4">
+                                    <li class="flex flex-col expandable-item">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-check-circle text-green-500 w-8 text-xl"></i>
+                                            <span class="item-title font-bold text-gray-800">Site Web Optimisé</span>
+                                        </div>
+                                        <div class="accordion-content">
+                                            <div class="pl-11 text-sm text-gray-600">Développement de A-Z centré sur la réservation.</div>
+                                        </div>
+                                    </li>
+                                    <li class="flex flex-col expandable-item">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-check-circle text-green-500 w-8 text-xl"></i>
+                                            <span class="item-title font-bold text-gray-800">Process Vente sur site</span>
+                                        </div>
+                                        <div class="accordion-content">
+                                            <div class="pl-11 text-sm text-gray-600">Mise en évidence stricte du CTA « Réserver sa séance ».</div>
+                                        </div>
+                                    </li>
+                                    <li class="flex flex-col expandable-item">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-check-circle text-green-500 w-8 text-xl"></i>
+                                            <span class="item-title font-bold text-gray-800">Analytics Intégrés</span>
+                                        </div>
+                                        <div class="accordion-content">
+                                            <div class="pl-11 text-sm text-gray-600">Installation et tracking complet Google Analytics 4.</div>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- 4. RÉTENTION (Bas Gauche) -->
+                        <div class="absolute left-[8%] bottom-[-40px] z-30 card-container">
+                            <div class="bg-white p-6 rounded-3xl shadow-xl border-t-8 border-green-500 w-[350px] text-center relative mt-8 slide-up delay-[700ms]">
+                                <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16 bg-green-500 text-white rounded-full flex items-center justify-center text-2xl font-black shadow-lg ring-4 ring-white z-10">4</div>
+                                <h3 class="text-2xl font-black text-green-500 uppercase tracking-widest mt-4 mb-3">Rétention</h3>
+                                <ul class="text-left text-gray-600 space-y-3 text-lg font-medium px-4">
+                                    <li class="flex flex-col expandable-item">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-check-circle text-green-500 w-8 text-xl"></i>
+                                            <span class="item-title font-bold text-gray-800">Gestion du CRM</span>
+                                        </div>
+                                        <div class="accordion-content">
+                                            <div class="pl-11 text-sm text-gray-600">Structuration de la base de données.</div>
+                                        </div>
+                                    </li>
+                                    <li class="flex flex-col expandable-item">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-check-circle text-green-500 w-8 text-xl"></i>
+                                            <span class="item-title font-bold text-gray-800">Réponses auto. aux avis</span>
+                                        </div>
+                                        <div class="accordion-content">
+                                            <ul class="pl-11 text-sm text-gray-600 list-disc space-y-1">
+                                                <li>Réponse 100% auto si note &ge; 4★.</li>
+                                                <li>Alerte email pour choix si &lt; 4★.</li>
+                                                <li>Collecte QR Code (vestiaires).</li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                    <li class="flex flex-col expandable-item">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-check-circle text-green-500 w-8 text-xl"></i>
+                                            <span class="item-title font-bold text-gray-800">Séquences emails filtrées</span>
+                                        </div>
+                                        <div class="accordion-content">
+                                            <ul class="pl-11 text-sm text-gray-600 list-disc space-y-1">
+                                                <li>Emails de bienvenue et anniversaires.</li>
+                                                <li>Relances et upsell fin de carte.</li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- 5. PILOTAGE (Gauche Milieu-Haut) -->
+                        <div class="absolute left-[1%] top-[15%] z-30 card-container">
+                            <div class="bg-white p-6 rounded-3xl shadow-xl border-t-8 w-[350px] text-center relative mt-8 slide-up delay-[800ms]" style="border-top-color: #f97316;">
+                                <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-16 h-16 text-white rounded-full flex items-center justify-center text-2xl font-black shadow-lg ring-4 ring-white z-10" style="background-color: #f97316;">5</div>
+                                <h3 class="text-2xl font-black uppercase tracking-widest mt-4 mb-3" style="color: #f97316;">Pilotage</h3>
+                                <ul class="text-left text-gray-600 space-y-3 text-lg font-medium px-4">
+                                    <li class="flex flex-col expandable-item">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-check-circle text-green-500 w-8 text-xl"></i>
+                                            <span class="item-title font-bold text-gray-800">Tableaux de bord persos</span>
+                                        </div>
+                                        <div class="accordion-content">
+                                            <div class="pl-11 text-sm text-gray-600">Dashboard Data Studio (Web, CA, Transfo Essais).</div>
+                                        </div>
+                                    </li>
+                                    <li class="flex flex-col expandable-item">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-check-circle text-green-500 w-8 text-xl"></i>
+                                            <span class="item-title font-bold text-gray-800">Mesure stricte du R.O.I</span>
+                                        </div>
+                                        <div class="accordion-content">
+                                            <div class="pl-11 text-sm text-gray-600">Suivi précis de la rentabilité des Ads.</div>
+                                        </div>
+                                    </li>
+                                    <li class="flex flex-col expandable-item">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-check-circle text-green-500 w-8 text-xl"></i>
+                                            <span class="item-title font-bold text-gray-800">Analyse Comportementale</span>
+                                        </div>
+                                        <div class="accordion-content">
+                                            <ul class="pl-11 text-sm text-gray-600 list-disc space-y-1">
+                                                <li>Problème rétention identifié (Montpellier).</li>
+                                                <li>Plan de fidélisation activé.</li>
+                                                <li>Rapport mensuel.</li>
+                                            </ul>
+                                        </div>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 9: Résultats Aquabike (Epuré) -->
+            <div class="slide bg-pagebg" data-section="Plan d'action">
+                <div class="content-container max-w-[1600px] mx-auto w-full">
+                    <span class="text-secondary font-bold tracking-[0.2em] uppercase text-sm mb-4 block slide-up">04 — Les Résultats (Action 1)</span>
+                    <h1 class="text-[4.5rem] font-black text-primary mb-10 slide-up delay-100 tracking-tight">Post Boosté : L'Impact direct</h1>
+                    
+                    <div class="grid grid-cols-2 gap-16 slide-up delay-200">
+                        <div class="bg-white p-12 rounded-[3rem] shadow-sm border border-gray-100 h-full flex flex-col justify-center relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-64 h-64 bg-blue/5 rounded-bl-[100%] z-0"></div>
+                            
+                            <h3 class="text-3xl font-bold text-primary mb-8 border-b border-gray-100 pb-4 relative z-10">Performance (Juin)</h3>
+                            
+                            <div class="space-y-10 relative z-10">
+                                <div class="flex items-center gap-8">
+                                    <div class="text-[6rem] font-black text-secondary leading-none w-[280px] shrink-0 text-right">+71%</div>
+                                    <div class="text-2xl font-bold text-gray-600 uppercase tracking-widest border-l-4 border-gray-100 pl-8">Chiffre d'Affaires</div>
+                                </div>
+                                <div class="flex items-center gap-8">
+                                    <div class="text-[6rem] font-black text-blue leading-none w-[280px] shrink-0 text-right">+76%</div>
+                                    <div class="text-2xl font-bold text-gray-600 uppercase tracking-widest border-l-4 border-gray-100 pl-8">
+                                        Nouveaux Clients
+                                        <span class="block text-lg font-medium text-gray-400 mt-2 tracking-normal lowercase first-letter:uppercase">72 nouveaux clients générés</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col justify-center gap-6">
+                            <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 flex items-start gap-8 transform hover:-translate-y-2 transition-transform duration-300">
+                                <div class="w-16 h-16 rounded-full bg-blue/10 flex items-center justify-center text-blue text-2xl shrink-0"><i class="fas fa-chart-line"></i></div>
+                                <div>
+                                    <h4 class="text-2xl font-bold text-primary mb-2">Taux de conversion surveillé</h4>
+                                    <p class="text-xl text-gray-600 font-medium leading-relaxed">Analyse précise des conversions des "séances d'essai" et mise en place immédiate d'actions correctrices avec le gérant.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 flex items-start gap-8 transform hover:-translate-y-2 transition-transform duration-300">
+                                <div class="w-16 h-16 rounded-full bg-secondary/10 flex items-center justify-center text-secondary text-2xl shrink-0"><i class="fas fa-bullhorn"></i></div>
+                                <div>
+                                    <h4 class="text-2xl font-bold text-primary mb-2">Visibilité Pérenne</h4>
+                                    <p class="text-xl text-gray-600 font-medium leading-relaxed">Le post boosté est devenu le contenu le plus vu de la page, générant de l'engagement même après la fin du budget publicitaire.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 flex items-start gap-8 transform hover:-translate-y-2 transition-transform duration-300">
+                                <div class="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center text-green-600 text-2xl shrink-0"><i class="fas fa-check-double"></i></div>
+                                <div>
+                                    <h4 class="text-2xl font-bold text-primary mb-2">Modèle "At Scale" Validé</h4>
+                                    <p class="text-xl text-gray-600 font-medium leading-relaxed">Coût d'acquisition validé. Le modèle est fiable, les process sont testés et prêts à être répliqués à plus grande échelle.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 10: Action 2 - La Maison du Bosquet (Split) -->
+            <div class="slide bg-white flex flex-row !p-0" data-section="Plan d'action">
+                <div class="w-5/12 px-20 py-32 bg-primary text-white flex flex-col justify-center h-full relative overflow-hidden">
+                    <div class="absolute -bottom-20 -left-20 w-96 h-96 bg-white/5 rounded-full z-0"></div>
+                    <div class="relative z-10">
+                        <img src="images/LogoBlancTransparent.png" class="h-32 mb-8 object-contain slide-up" alt="Logo My Sport Session" onerror="this.style.display='none'">
+                        <span class="text-secondary font-bold tracking-[0.2em] uppercase text-sm mb-6 block slide-up">04 — Action 2</span>
+                        <h2 class="text-[3.5rem] font-black text-white mb-8 slide-up delay-100 leading-[1.1] tracking-tight">La Maison du Bosquet</h2>
+                        
+                        <div class="slide-up delay-200 mb-10">
+                            <p class="text-2xl text-white/80 font-medium leading-relaxed mb-4">
+                                Cabinet de kinésithérapie sportive & Activités commerciales (Yoga, Pilates, APA) à Carnon.
+                            </p>
+                            <div class="inline-flex items-center gap-3 bg-white/10 backdrop-blur px-5 py-2 rounded-full border border-white/20 shadow-sm">
+                                <span class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></span>
+                                <span class="font-bold text-white">Taux de remplissage : Plafonne à 30%</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white/5 border border-white/10 p-8 rounded-2xl slide-up delay-300">
+                            <h4 class="text-xl font-bold text-white mb-3">Contexte Tech</h4>
+                            <p class="text-lg text-white/80">Client équipé chez <strong class="text-secondary font-bold">B-Sport</strong> (concurrent majeur). Confirme l'universalité du besoin sur le marché.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-7/12 px-24 py-32 bg-white flex flex-col justify-center h-full border-l border-gray-100">
+                    <div class="space-y-8 slide-up delay-200">
+                        <!-- Enjeu réglementaire -->
+                        <div class="flex gap-6 items-start">
+                            <div class="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center text-red-500 text-xl shrink-0"><i class="fas fa-balance-scale"></i></div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-primary mb-2">L'Enjeu Déontologique</h3>
+                                <p class="text-lg text-gray-600 leading-relaxed">
+                                    Les kinésithérapeutes sont soumis à des règles strictes sur la communication commerciale. 
+                                    Le site actuel frôlait l'illégalité en mélangeant médical et sport.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- L'action -->
+                        <div class="flex gap-6 items-start">
+                            <div class="w-14 h-14 rounded-full bg-blue/10 flex items-center justify-center text-blue text-xl shrink-0"><i class="fas fa-columns"></i></div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-primary mb-2">L'Action : Séparation Digitale</h3>
+                                <p class="text-lg text-gray-600 leading-relaxed mb-3">
+                                    Création de <strong>2 sites distincts</strong> et pages Google séparées pour lever le risque avant toute acquisition.
+                                </p>
+                                <a href="https://proposition-maison-bosquet.vercel.app/" target="_blank" class="bg-gray-50 hover:bg-gray-100 transition-colors p-3 rounded-xl border border-gray-200 flex items-center gap-4 group cursor-pointer w-full">
+                                    <i class="fab fa-dev text-xl text-gray-400 group-hover:text-primary transition-colors"></i>
+                                    <span class="text-base text-gray-600">Approche innovante : pitch commercial via <strong class="text-primary">Landing page personalisée</strong> (Pas de PPT).</span>
+                                    <i class="fas fa-external-link-alt ml-auto text-gray-400 group-hover:text-primary transition-colors"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- Résultat -->
+                        <div class="flex flex-col gap-4 bg-slate-50 p-6 rounded-2xl border border-slate-100 mt-2">
+                            <div class="flex gap-6 items-start">
+                                <div class="w-14 h-14 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 text-xl shrink-0"><i class="fas fa-hourglass-half"></i></div>
+                                <div class="w-full">
+                                    <h3 class="text-xl font-bold text-primary mb-1">Résultats</h3>
+                                    <p class="text-base text-gray-500 italic mb-4">Accompagnement en phase de démarrage, résultats non mesurables à ce stade. Priorité à la conformité.</p>
+                                    
+                                    <ul class="space-y-3 border-t border-slate-200 pt-4">
+                                        <li class="flex items-center gap-3 text-base text-gray-700 font-semibold bg-white p-2.5 rounded-lg shadow-sm border border-slate-100">
+                                            <i class="fas fa-check-circle text-green-500 text-lg"></i> Séparation des Pages Google Business Profile
+                                        </li>
+                                        <li class="flex items-center gap-3 text-base text-gray-700 font-semibold bg-white p-2.5 rounded-lg shadow-sm border border-slate-100">
+                                            <i class="fas fa-check-circle text-green-500 text-lg"></i> Création du site Sport.maisondubosquet.com
+                                        </li>
+                                        <li class="flex items-center gap-3 text-base text-gray-700 font-semibold bg-white p-2.5 rounded-lg shadow-sm border border-slate-100">
+                                            <i class="fas fa-check-circle text-green-500 text-lg"></i> Refonte du site exclusivement médical maisondubosquet.com
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 11: Scaling -->
+            <div class="slide dark-mode" data-section="Bilan & Perspectives">
+                <div class="absolute inset-0 bg-[#140c4f] z-0">
+                    <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 40px 40px;"></div>
+                </div>
+                
+                <div class="content-container relative z-10 max-w-[1600px] mx-auto w-full">
+                    <span class="text-secondary font-bold tracking-[0.3em] uppercase text-sm mb-6 block slide-up text-center">05 — Bilan & Perspectives</span>
+                    <h1 class="text-white text-[4.5rem] font-black mb-16 slide-up delay-100 tracking-tight text-center">Recommandations & Scaling</h1>
+                    
+                    <div class="grid grid-cols-3 gap-8 slide-up delay-200 mb-16">
+                        <div class="bg-white/10 backdrop-blur-md border border-white/20 p-8 rounded-3xl">
+                            <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center text-white text-xl mb-6"><i class="fas fa-shield-alt"></i></div>
+                            <h3 class="text-xl font-bold text-white mb-3">1. Consolider</h3>
+                            <p class="text-gray-300 font-medium">Sécuriser les deux POC en cours et formaliser des cas clients documentés avant septembre 2026.</p>
+                        </div>
+                        <div class="bg-blue/30 backdrop-blur-md border border-blue/40 p-8 rounded-3xl transform scale-105 shadow-2xl">
+                            <div class="w-14 h-14 bg-blue rounded-full flex items-center justify-center text-white text-xl mb-6"><i class="fas fa-euro-sign"></i></div>
+                            <h3 class="text-xl font-bold text-white mb-3">2. Ajuster le Pricing</h3>
+                            <p class="text-gray-200 font-medium">Passage à <strong class="text-white text-2xl ml-1">390€</strong><span class="text-sm">/mois</span>. Reste ultra-compétitif face aux agences (souvent >1000€).</p>
+                        </div>
+                        <div class="bg-secondary/20 backdrop-blur-md border border-secondary/30 p-8 rounded-3xl">
+                            <div class="w-14 h-14 bg-secondary/80 rounded-full flex items-center justify-center text-white text-xl mb-6"><i class="fas fa-horse-head"></i></div>
+                            <h3 class="text-xl font-bold text-white mb-3">3. Synergie "Cheval de Troie"</h3>
+                            <p class="text-gray-300 font-medium">Utiliser l'agence comme un pipeline d'acquisition qualifié pour le logiciel My Sport Session.</p>
+                        </div>
+                    </div>
+
+                    <!-- Scénarios financiers -->
+                    <div class="bg-white p-10 rounded-[2.5rem] slide-up delay-300 shadow-xl">
+                        <div class="flex items-center justify-between mb-8 px-4">
+                            <h3 class="text-2xl font-bold text-primary">Projections à 12 mois</h3>
+                            <div class="bg-green-100 text-green-700 px-4 py-2 rounded-full font-bold text-sm tracking-wide">Seuil de rentabilité : 2 clients !</div>
+                        </div>
+                        <div class="flex justify-between items-end border-t border-gray-100 pt-8 px-4">
+                            <div class="text-center w-1/3 border-r border-gray-100">
+                                <div class="text-gray-500 font-medium mb-2 uppercase tracking-widest text-sm">Conservateur (5 clients)</div>
+                                <div class="text-4xl font-black text-gray-800">23 400 €</div>
+                            </div>
+                            <div class="text-center w-1/3 border-r border-gray-100">
+                                <div class="text-gray-500 font-medium mb-2 uppercase tracking-widest text-sm">Réaliste (10 clients)</div>
+                                <div class="text-5xl font-black text-blue">46 800 €</div>
+                            </div>
+                            <div class="text-center w-1/3">
+                                <div class="text-gray-500 font-medium mb-2 uppercase tracking-widest text-sm">Optimiste (15 clients)</div>
+                                <div class="text-4xl font-black text-gray-800">70 200 €</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 12: Impact organisationnel -->
+            <div class="slide bg-pagebg" data-section="Bilan & Perspectives">
+                <div class="content-container max-w-[1600px] mx-auto w-full">
+                    <span class="text-blue font-bold tracking-[0.2em] uppercase text-sm mb-4 block slide-up">05 — Capacité de production</span>
+                    <h1 class="text-[4.5rem] font-black text-primary mb-16 slide-up delay-100 tracking-tight">Impact Organisationnel</h1>
+                    
+                    <div class="grid grid-cols-2 gap-16 slide-up delay-200">
+                        <div class="space-y-8">
+                            <div class="bg-white p-10 rounded-3xl shadow-sm border border-red-100 relative overflow-hidden">
+                                <div class="absolute right-0 top-0 w-2 h-full bg-red-400"></div>
+                                <h3 class="text-2xl font-bold text-primary mb-4 flex items-center gap-3">
+                                    <i class="fas fa-exclamation-triangle text-red-400"></i> Le Goulot d'Étranglement
+                                </h3>
+                                <p class="text-xl text-gray-600 leading-relaxed">Le mois d'onboarding a dépassé <strong class="text-red-500 font-black">40 heures</strong> lors du premier client.</p>
+                                <div class="mt-6 pt-6 border-t border-gray-100">
+                                    <p class="text-lg font-medium text-gray-800 mb-3">Objectif : Réduire à 20h via :</p>
+                                    <div class="flex gap-4">
+                                        <span class="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-sm font-bold">Standardisation</span>
+                                        <span class="bg-gray-100 text-gray-600 px-4 py-2 rounded-full text-sm font-bold">Templates</span>
+                                        <span class="bg-blue/10 text-blue px-4 py-2 rounded-full text-sm font-bold">Automatisation + IA</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-10 rounded-3xl shadow-sm border border-green-100 relative overflow-hidden">
+                                <div class="absolute right-0 top-0 w-2 h-full bg-green-400"></div>
+                                <h3 class="text-2xl font-bold text-primary mb-4 flex items-center gap-3">
+                                    <i class="fas fa-tachometer-alt text-green-400"></i> La Vitesse de Croisière (Run)
+                                </h3>
+                                <p class="text-xl text-gray-600 leading-relaxed">Gestion récurrente fortement automatisée : seulement <strong class="text-green-500 font-black">3 à 5 heures</strong> par mois par client.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-primary p-12 rounded-[3rem] shadow-2xl flex flex-col justify-center relative overflow-hidden text-white">
+                            <div class="absolute -bottom-10 -right-10 text-[15rem] opacity-5"><i class="fas fa-users-cog"></i></div>
+                            <h3 class="text-3xl font-bold mb-10 relative z-10 text-white">Capacité d'1 ressource (140h/mois)</h3>
+                            
+                            <ul class="space-y-8 relative z-10 text-2xl font-medium">
+                                <li class="flex justify-between items-center border-b border-white/10 pb-4">
+                                    <span class="opacity-80">Gestion de 10 clients (Run)</span>
+                                    <span class="font-bold">40h</span>
+                                </li>
+                                <li class="flex justify-between items-center border-b border-white/10 pb-4">
+                                    <span class="opacity-80">2 nouveaux Onboardings</span>
+                                    <span class="font-bold">40h</span>
+                                </li>
+                                <li class="flex justify-between items-center border-b border-white/10 pb-4">
+                                    <span class="opacity-80">Prospection commerciale</span>
+                                    <span class="font-bold">8h</span>
+                                </li>
+                                <li class="flex justify-between items-center text-3xl mt-8 text-secondary">
+                                    <span class="font-black">Total estimé</span>
+                                    <span class="font-black">88h</span>
+                                </li>
+                            </ul>
+                            <div class="mt-10 bg-white/10 p-5 rounded-2xl relative z-10 text-center">
+                                <span class="text-green-400 font-bold text-xl">✓ Marge de sécurité : ~52 heures</span> pour piloter les imprévus.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 13: Synergie -->
+            <div class="slide bg-white" data-section="Bilan & Perspectives">
+                <div class="content-container max-w-[1400px] mx-auto w-full text-center">
+                    <div class="w-24 h-24 bg-blue/10 rounded-full flex items-center justify-center text-blue text-4xl mx-auto mb-8 slide-up"><i class="fas fa-sync-alt"></i></div>
+                    <span class="text-secondary font-bold tracking-[0.2em] uppercase text-sm mb-4 block slide-up delay-100">05 — Le Coup d'Après</span>
+                    <h1 class="text-[4rem] font-black text-primary mb-12 slide-up delay-200 tracking-tight">Synergie Stratégique</h1>
+                    
+                    <p class="text-3xl text-gray-600 font-medium leading-relaxed max-w-[1000px] mx-auto slide-up delay-300 mb-16">
+                        Transformer une dépense marketing en <strong class="text-primary font-black">investissement d'acquisition à effet différé</strong> pour le logiciel My Sport Session.
+                    </p>
+
+                    <div class="flex items-center justify-center gap-6 slide-up delay-400">
+                        <div class="w-1/3 bg-gray-50 p-8 rounded-3xl border border-gray-100">
+                            <div class="text-5xl text-gray-300 mb-6"><i class="fas fa-handshake"></i></div>
+                            <h4 class="text-xl font-bold text-primary mb-3">1. Relation de confiance</h4>
+                            <p class="text-gray-600">Accompagnement terrain, vulgarisation et résultats concrets créent un lien fort avec le gérant, indépendamment de son logiciel.</p>
+                        </div>
+                        <div class="text-3xl text-gray-300"><i class="fas fa-arrow-right"></i></div>
+                        <div class="w-1/3 bg-blue/5 p-8 rounded-3xl border border-blue/20 transform scale-110 shadow-lg">
+                            <div class="text-5xl text-blue mb-6"><i class="fas fa-laptop-code"></i></div>
+                            <h4 class="text-xl font-bold text-primary mb-3">2. L'Alternative Naturelle</h4>
+                            <p class="text-gray-700">Le jour où le client veut changer de logiciel, My Sport Session est naturellement positionné comme le choix de confiance n°1.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 14: Bilan de compétences -->
+            <div class="slide dark-mode" data-section="Bilan & Perspectives">
+                <div class="absolute inset-0 bg-[#0a0628] z-0"></div>
+                <div class="content-container relative z-10 max-w-[1600px] mx-auto w-full">
+                    <span class="text-[#ed2c1a] font-bold tracking-[0.3em] uppercase text-sm mb-6 block slide-up">Bilan Personnel</span>
+                    <h1 class="text-white text-[4rem] font-black mb-16 slide-up delay-100 tracking-tight">5 Compétences Validées</h1>
+                    
+                    <div class="grid grid-cols-2 gap-x-16 gap-y-10 slide-up delay-200">
+                        <div class="flex gap-6 items-start">
+                            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white text-xl shrink-0 border border-white/20"><i class="fas fa-chess-knight"></i></div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white mb-2">Stratégie 360°</h3>
+                                <p class="text-gray-400 text-lg">Construire une stratégie d'acquisition "from scratch" en alignant diagnostic terrain et objectifs business.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-6 items-start">
+                            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white text-xl shrink-0 border border-white/20"><i class="fas fa-rocket"></i></div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white mb-2">Opérations Growth</h3>
+                                <p class="text-gray-400 text-lg">Mettre en œuvre des actions concrètes et mesurables (systèmes d'avis, audits, création de sites).</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-6 items-start">
+                            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white text-xl shrink-0 border border-white/20"><i class="fas fa-comments-dollar"></i></div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white mb-2">Vente B2B Complète</h3>
+                                <p class="text-gray-400 text-lg">Gérer un cycle de vente de A à Z : de la qualification du prospect jusqu'au closing et à la contractualisation.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-6 items-start">
+                            <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-white text-xl shrink-0 border border-white/20"><i class="fas fa-chart-pie"></i></div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white mb-2">Pilotage Data</h3>
+                                <p class="text-gray-400 text-lg">Suivre la performance via des dashboards clairs, accessibles et compréhensibles pour des gérants non-experts.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-6 items-start">
+                            <div class="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center text-secondary text-xl shrink-0 border border-secondary/30"><i class="fas fa-robot"></i></div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white mb-2">Maîtrise Outils & IA</h3>
+                                <p class="text-gray-400 text-lg">Exploiter un écosystème moderne (No-code, automatisation, intelligence artificielle) pour gagner en productivité.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 15: Conclusion -->
+            <div class="slide bg-pagebg" data-section="Conclusion">
+                <div class="content-container max-w-[1400px] mx-auto w-full text-center">
+                    <h1 class="text-[5rem] font-black text-primary mb-16 slide-up tracking-tight">Conclusion</h1>
+                    
+                    <div class="bg-white p-12 rounded-[3rem] shadow-xl border-t-4 border-primary slide-up delay-100 mb-12 text-left relative">
+                        <div class="absolute -top-6 left-10 bg-primary text-white px-6 py-2 rounded-full font-bold uppercase tracking-widest text-sm">La réponse à la problématique</div>
+                        <p class="text-2xl text-gray-800 leading-relaxed mb-10 font-medium">
+                            L'élargissement vers le marketing opérationnel constitue-t-il un levier de différenciation et d'acquisition durable ?
+                        </p>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-center gap-6 p-6 bg-green-50 rounded-2xl border border-green-100">
+                                <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white text-xl shrink-0"><i class="fas fa-check"></i></div>
+                                <div class="text-xl font-bold text-green-900">OUI sur la différenciation <span class="font-normal text-green-700 block text-lg mt-1">Aucun des 3 concurrents n'accompagne opérationnellement. Les 2 POC le prouvent.</span></div>
+                            </div>
+                            <div class="flex items-center gap-6 p-6 bg-blue/5 rounded-2xl border border-blue/10">
+                                <div class="w-12 h-12 bg-blue rounded-full flex items-center justify-center text-white text-xl shrink-0"><i class="fas fa-tools"></i></div>
+                                <div class="text-xl font-bold text-primary">EN CONSTRUCTION sur l'acquisition durable <span class="font-normal text-gray-600 block text-lg mt-1">Fondations posées, mais les 3 leviers (consolider, pricing, synergie) restent à exécuter pour scaler.</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-2xl text-gray-600 font-medium slide-up delay-200">
+                        <span class="text-secondary font-bold uppercase tracking-wider text-sm block mb-2">Et la suite ?</span>
+                        Je poursuis cette activité en agence externe pour My Sport Session, pour l'étendre aux TPE/PME locales en manque d'accompagnement.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Slide 16: Merci -->
+            <div class="slide dark-mode" data-section="Conclusion">
+                <img src="images/hero_athlete.png" class="bg-image-fullscreen" alt="Background">
+                <div class="overlay-dark" style="background: linear-gradient(to bottom, rgba(20,12,79,0.85) 0%, rgba(0,0,0,0.95) 100%);"></div>
+                
+                <div class="content-container items-center justify-center text-center">
+                    <div class="w-32 h-32 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white text-5xl mb-12 slide-up border border-white/20 shadow-2xl mx-auto">
+                        <i class="fas fa-comment-dots"></i>
+                    </div>
+                    <h1 class="text-white text-[6rem] font-black leading-[1.1] mb-8 slide-up delay-100 tracking-tight">
+                        Merci de votre attention
+                    </h1>
+                    <p class="text-3xl text-[#ed2c1a] font-medium slide-up delay-200 tracking-wide mb-16">
+                        Je suis à votre disposition pour vos questions.
+                    </p>
+                    <a href="portail_soutenance.html" target="_blank" class="inline-flex items-center gap-4 bg-white/10 hover:bg-white/20 border border-white/30 text-white px-8 py-4 rounded-full font-bold text-xl backdrop-blur-md transition-all transform hover:scale-105 slide-up delay-300">
+                        <i class="fas fa-folder-open"></i> Accéder au portail des Annexes & Outils
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Controls Overlay -->
+    <div class="fixed bottom-8 right-8 z-[100] flex gap-4 opacity-20 hover:opacity-100 transition-opacity">
+        <button id="fullscreenBtn" class="w-16 h-16 rounded-full bg-white text-primary shadow-2xl flex items-center justify-center hover:bg-gray-100 text-xl"><i class="fas fa-expand"></i></button>
+        <button id="prevBtn" class="w-16 h-16 rounded-full bg-white text-primary shadow-2xl flex items-center justify-center hover:bg-gray-100 text-xl"><i class="fas fa-chevron-left"></i></button>
+        <button id="nextBtn" class="w-16 h-16 rounded-full bg-white text-primary shadow-2xl flex items-center justify-center hover:bg-gray-100 text-xl"><i class="fas fa-chevron-right"></i></button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+            const timelineContainer = document.getElementById('timeline');
+            const timelineWrapper = document.getElementById('timelineContainer');
+            const presentation = document.getElementById('presentation');
+            
+            function resizePresentation() {
+                const scale = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+                presentation.style.transform = `scale(${scale})`;
+            }
+            window.addEventListener('resize', resizePresentation);
+            resizePresentation();
+            
+            let currentSlide = 0;
+            let currentFragmentIndex = 0;
+            const sections = [];
+            slides.forEach((slide, index) => {
+                const section = slide.getAttribute('data-section');
+                let secObj = sections.find(s => s.name === section);
+                if (!secObj) {
+                    secObj = { name: section, startIndex: index, count: 0 };
+                    sections.push(secObj);
+                }
+                secObj.count++;
+                slide.setAttribute('data-index', index);
+            });
+
+            sections.forEach((section) => {
+                const label = document.createElement('div');
+                label.className = 'timeline-section';
+                label.textContent = section.name;
+                label.onclick = () => goToSlide(section.startIndex);
+                timelineContainer.appendChild(label);
+            });
+
+            function updateTimeline() {
+                document.querySelectorAll('.timeline-section').forEach(el => el.classList.remove('active'));
+                const currentSection = slides[currentSlide].getAttribute('data-section');
+                document.querySelectorAll('.timeline-section').forEach(el => {
+                    if (el.textContent === currentSection) el.classList.add('active');
+                });
+
+                if (slides[currentSlide].classList.contains('dark-mode')) {
+                    timelineWrapper.classList.add('dark-mode');
+                } else {
+                    timelineWrapper.classList.remove('dark-mode');
+                }
+            }
+
+            function goToSlide(index) {
+                if (index < 0 || index >= slides.length) return;
+                
+                const currentFragments = slides[currentSlide].querySelectorAll('.fragment');
+                currentFragments.forEach(f => f.classList.remove('visible'));
+                currentFragmentIndex = 0;
+                
+                slides[currentSlide].classList.remove('active');
+                currentSlide = index;
+                slides[currentSlide].classList.add('active');
+                updateTimeline();
+            }
+
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', () => {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen().catch(err => {
+                            console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                        });
+                        fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                    } else {
+                        document.exitFullscreen();
+                        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                    }
+                });
+            }
+
+            function nextStep() {
+                const currentFragments = slides[currentSlide].querySelectorAll('.fragment');
+                if (currentFragmentIndex < currentFragments.length) {
+                    currentFragments[currentFragmentIndex].classList.add('visible');
+                    currentFragmentIndex++;
+                } else {
+                    goToSlide(currentSlide + 1);
+                }
+            }
+            
+            function prevStep() {
+                const currentFragments = slides[currentSlide].querySelectorAll('.fragment');
+                if (currentFragmentIndex > 0) {
+                    currentFragmentIndex--;
+                    currentFragments[currentFragmentIndex].classList.remove('visible');
+                } else {
+                    goToSlide(currentSlide - 1);
+                }
+            }
+
+            document.getElementById('nextBtn').addEventListener('click', nextStep);
+            document.getElementById('prevBtn').addEventListener('click', prevStep);
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') nextStep();
+                else if (e.key === 'ArrowLeft') prevStep();
+            });
+
+            goToSlide(0);
+
+            // Accordion click events for expandable items
+            document.querySelectorAll('.expandable-item').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isOpen = item.classList.contains('open');
+                    
+                    // Reset z-index of all cards to send them to background
+                    document.querySelectorAll('.card-container').forEach(card => {
+                        card.style.zIndex = '30';
+                    });
+
+                    // Bring current card to the foreground
+                    const parentCard = item.closest('.card-container');
+                    if (parentCard) {
+                        parentCard.style.zIndex = '50';
+                    }
+
+                    if (!isOpen) {
+                        item.classList.add('open');
+                    } else {
+                        item.classList.remove('open');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
