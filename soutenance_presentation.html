@@ -1947,14 +1947,12 @@
     </div>
 
     <!-- Controls Overlay -->
-    <div class="fixed bottom-8 right-8 z-[100] flex gap-4 opacity-20 hover:opacity-100 transition-opacity">
+    <div class="fixed bottom-8 right-8 z-[100] flex gap-4 opacity-0 hover:opacity-30 transition-opacity">
         <button id="scriptToggleBtn" class="w-16 h-16 rounded-full bg-white text-primary shadow-2xl flex items-center justify-center hover:bg-gray-100 text-xl group relative" title="Afficher/Masquer le script">
             <i class="fas fa-file-alt"></i>
             <span class="absolute -top-10 bg-black text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap transition-opacity">Mode Entraînement</span>
         </button>
         <button id="fullscreenBtn" class="w-16 h-16 rounded-full bg-white text-primary shadow-2xl flex items-center justify-center hover:bg-gray-100 text-xl"><i class="fas fa-expand"></i></button>
-        <button id="prevBtn" class="w-16 h-16 rounded-full bg-white text-primary shadow-2xl flex items-center justify-center hover:bg-gray-100 text-xl"><i class="fas fa-chevron-left"></i></button>
-        <button id="nextBtn" class="w-16 h-16 rounded-full bg-white text-primary shadow-2xl flex items-center justify-center hover:bg-gray-100 text-xl"><i class="fas fa-chevron-right"></i></button>
     </div>
 
     <script>
@@ -2224,8 +2222,7 @@
                 }
             }
 
-            document.getElementById('nextBtn').addEventListener('click', nextStep);
-            document.getElementById('prevBtn').addEventListener('click', prevStep);
+            // Les boutons nextBtn et prevBtn ont été retirés de l'interface graphique.
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') nextStep();
                 else if (e.key === 'ArrowLeft') prevStep();
