@@ -1,0 +1,2469 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Soutenance — Louis Delporte · Spoutnik 62 · Air Cloud</title>
+
+<link rel="preconnect" href="https://fonts.cdnfonts.com">
+
+<!-- ───────── LIBS via CDN ───────── -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/countup.js@2.8.0/dist/countUp.umd.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<style>
+/* ═══════════════ FONTS ═══════════════ */
+@font-face { font-family: "GilroyAirCloud"; font-style: normal; font-weight: 400; font-display: swap; src: url("https://fonts.cdnfonts.com/s/16219/Gilroy-Regular.woff") format("woff"); }
+@font-face { font-family: "GilroyAirCloud"; font-style: normal; font-weight: 500; font-display: swap; src: url("https://fonts.cdnfonts.com/s/16219/Gilroy-Medium.woff") format("woff"); }
+@font-face { font-family: "GilroyAirCloud"; font-style: normal; font-weight: 700; font-display: swap; src: url("https://fonts.cdnfonts.com/s/16219/Gilroy-Bold.woff") format("woff"); }
+@font-face { font-family: "GilroyAirCloud"; font-style: normal; font-weight: 800; font-display: swap; src: url("https://fonts.cdnfonts.com/s/16219/Gilroy-Heavy.woff") format("woff"); }
+@font-face { font-family: "GilroyAirCloud"; font-style: normal; font-weight: 900; font-display: swap; src: url("https://fonts.cdnfonts.com/s/16219/Gilroy-Heavy.woff") format("woff"); }
+
+/* ═══════════════ TOKENS ═══════════════ */
+:root {
+  --flame: #FB5237;
+  --flame-soft: #FFE4DD;
+  --flame-deep: #C73E29;
+  --navy:   #1A1B2E;
+  --navy-soft: #2D2F4D;
+  --paper:  #F6F5F2;
+  --white:  #FFFFFF;
+  --ink:    #1A1B2E;
+  --muted:  #7A7C8C;
+  --green:  #2D9D63;
+  --red:    #D8412C;
+
+  --font-display: "GilroyAirCloud", "Inter", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+
+  --pad-x: clamp(48px, 6vw, 110px);
+  --pad-y: clamp(48px, 5vh, 80px);
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+
+body {
+  font-family: var(--font-display);
+  background: var(--paper);
+  color: var(--ink);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ═══════════════ DECK ═══════════════ */
+.deck { width: 100vw; height: 100vh; overflow: hidden; position: relative; perspective: 1800px; }
+.slides {
+  display: flex; flex-direction: column;
+  transition: transform 0.72s var(--ease-out);
+  will-change: transform;
+  transform-style: preserve-3d;
+}
+
+/* Effet de profondeur subtil sur les slides voisins du courant */
+.slide {
+  transition: opacity 0.6s var(--ease-out), filter 0.6s var(--ease-out);
+}
+.slide:not(.is-active):not(.is-prev):not(.is-next) {
+  opacity: 0;
+}
+.slide.is-prev, .slide.is-next {
+  opacity: 0.65;
+  filter: blur(2px);
+}
+.slide {
+  width: 100vw; height: 100vh; flex-shrink: 0;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: var(--pad-y) var(--pad-x);
+  position: relative;
+  transform-style: preserve-3d;
+  overflow: hidden;
+}
+.slide.dark   { background: var(--navy); color: var(--paper); }
+.slide.flame  { background: var(--flame); color: var(--paper); }
+.slide.paper  { background: var(--paper); color: var(--ink); }
+
+/* Mesh gradient atmosphérique sur les slides paper et dark */
+.slide.paper::after,
+.slide.dark::after {
+  content: "";
+  position: absolute; inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.55;
+  background:
+    radial-gradient(ellipse 600px 400px at 12% 18%, rgba(251, 82, 55, 0.07), transparent 65%),
+    radial-gradient(ellipse 500px 350px at 88% 82%, rgba(251, 82, 55, 0.05), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 50% 50%, rgba(26, 27, 46, 0.03), transparent 70%);
+  animation: meshDrift 24s ease-in-out infinite;
+}
+.slide.dark::after {
+  opacity: 0.5;
+  background:
+    radial-gradient(ellipse 600px 400px at 18% 22%, rgba(251, 82, 55, 0.18), transparent 65%),
+    radial-gradient(ellipse 500px 350px at 82% 78%, rgba(251, 82, 55, 0.12), transparent 60%);
+}
+.slide.cover::after { display: none; }
+@keyframes meshDrift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(40px, -20px) scale(1.05); }
+  66%      { transform: translate(-30px, 30px) scale(0.98); }
+}
+
+/* Assurer que le contenu reste au-dessus du mesh */
+.slide > *:not(.timeline-strip) { position: relative; z-index: 1; }
+.slide.with-timeline .content > * { position: relative; z-index: 1; }
+
+/* Floating subtil sur certaines cartes (signal d'élément vivant) */
+.float-a { animation: floatA 7s ease-in-out infinite; }
+.float-b { animation: floatB 9s ease-in-out infinite; }
+.float-c { animation: floatC 11s ease-in-out infinite; }
+@keyframes floatA { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes floatB { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes floatC { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+/* Particules ambient sur slides flame (problématique, moment ancré) */
+.slide.flame::before, .slide.pb::before {
+  content: ""; position: absolute; inset: 0;
+  background-image:
+    radial-gradient(circle 2px at 12% 18%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(circle 1.5px at 85% 30%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(circle 2px at 25% 75%, rgba(255,255,255,0.35), transparent),
+    radial-gradient(circle 1px at 70% 60%, rgba(255,255,255,0.4), transparent),
+    radial-gradient(circle 2.5px at 60% 12%, rgba(255,255,255,0.25), transparent),
+    radial-gradient(circle 1.5px at 90% 85%, rgba(255,255,255,0.3), transparent),
+    radial-gradient(circle 1px at 8% 55%, rgba(255,255,255,0.45), transparent);
+  animation: particlesDrift 30s linear infinite;
+  pointer-events: none;
+}
+@keyframes particlesDrift {
+  0%   { transform: translate(0, 0); }
+  100% { transform: translate(20px, -30px); }
+}
+
+/* Anim entrée des éléments enfants */
+.slide [data-anim] {
+  opacity: 0;
+  transform: translateY(24px);
+  will-change: opacity, transform;
+}
+.slide.is-active [data-anim] {
+  animation: slideUp 0.7s var(--ease-out) forwards;
+}
+.slide.is-active [data-anim="1"] { animation-delay: 0.10s; }
+.slide.is-active [data-anim="2"] { animation-delay: 0.18s; }
+.slide.is-active [data-anim="3"] { animation-delay: 0.26s; }
+.slide.is-active [data-anim="4"] { animation-delay: 0.34s; }
+.slide.is-active [data-anim="5"] { animation-delay: 0.42s; }
+.slide.is-active [data-anim="6"] { animation-delay: 0.50s; }
+.slide.is-active [data-anim="7"] { animation-delay: 0.58s; }
+.slide.is-active [data-anim="8"] { animation-delay: 0.66s; }
+
+@keyframes slideUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════ TYPO ═══════════════ */
+.eyebrow {
+  font-size: 0.78rem; text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--flame);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+.slide.dark .eyebrow { color: var(--flame-soft); }
+.slide.flame .eyebrow { color: var(--paper); opacity: 0.85; }
+
+h1, h2, h3 {
+  font-family: var(--font-display); line-height: 1.06; letter-spacing: -0.02em; color: var(--ink);
+}
+.slide.dark h1, .slide.dark h2, .slide.dark h3 { color: var(--paper); }
+.slide.flame h1, .slide.flame h2, .slide.flame h3 { color: var(--paper); }
+
+h1 { font-size: clamp(48px, 6vw, 90px); font-weight: 900; }
+h2 { font-size: clamp(34px, 4.4vw, 60px); font-weight: 800; }
+h3 { font-size: clamp(22px, 2.2vw, 30px); font-weight: 700; }
+
+p, li { font-size: clamp(17px, 1.4vw, 22px); line-height: 1.5; color: var(--ink); font-weight: 400; }
+.slide.dark p, .slide.dark li, .slide.flame p, .slide.flame li { color: var(--paper); }
+
+.lead { font-size: clamp(20px, 1.7vw, 26px); font-weight: 500; max-width: 1100px; }
+.muted { color: var(--muted); }
+.slide.dark .muted { color: rgba(246,245,242,0.65); }
+em { color: var(--flame); font-style: normal; font-weight: 700; }
+strong { font-weight: 700; }
+
+/* ═══════════════ Glow flame sur grands chiffres ═══════════════ */
+.num, .value, .donut .label {
+  text-shadow: 0 0 22px rgba(251, 82, 55, 0.22);
+}
+
+/* ═══════════════ COVER ═══════════════ */
+.cover { align-items: center; justify-content: center; text-align: center; background: var(--paper); }
+.cover .logo {
+  width: 220px; margin-bottom: 40px;
+  filter: drop-shadow(0 20px 40px rgba(26, 27, 46, 0.18));
+}
+.cover .pill {
+  display: inline-block; padding: 8px 18px; border-radius: 999px;
+  background: var(--flame); color: var(--paper);
+  font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  box-shadow: 0 10px 28px rgba(251, 82, 55, 0.3);
+}
+.cover h1 { font-size: clamp(48px, 6vw, 96px); margin-top: 36px; margin-bottom: 18px; }
+.cover .meta { display: flex; flex-direction: column; gap: 8px; align-items: center; margin-top: 24px; font-size: 18px; color: var(--ink); opacity: 0.8; }
+
+/* ═══════════════ PITCH V2 ═══════════════ */
+.pitch { background: var(--paper); }
+.pitch-grid-v2 {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 64px; align-items: stretch;
+  margin-top: 24px;
+}
+.pitch-card-v2 {
+  position: relative;
+  background: linear-gradient(135deg, var(--navy) 0%, #25273F 100%);
+  color: var(--paper);
+  border-radius: 26px;
+  padding: 36px 32px;
+  box-shadow: 0 30px 80px rgba(26,27,46,0.25), 0 4px 16px rgba(26,27,46,0.10);
+  transform-style: preserve-3d;
+  overflow: hidden;
+}
+.pitch-card-v2 .avatar-glow {
+  position: absolute; top: -40px; right: -40px;
+  width: 160px; height: 160px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(251,82,55,0.55) 0%, transparent 65%);
+  filter: blur(20px);
+  pointer-events: none;
+}
+.pitch-card-v2 .name {
+  font-family: var(--font-display); font-weight: 900; font-size: 32px;
+  color: var(--paper); position: relative;
+}
+.pitch-card-v2 .role {
+  color: var(--flame); font-weight: 700; margin-top: 6px;
+  font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase;
+  position: relative;
+}
+.pitch-card-v2 .card-divider {
+  height: 1px; background: rgba(255,255,255,0.12);
+  margin: 22px 0 18px;
+}
+.pitch-card-v2 .card-row {
+  display: flex; justify-content: space-between; align-items: baseline;
+  padding: 9px 0;
+  border-bottom: 1px dashed rgba(255,255,255,0.08);
+}
+.pitch-card-v2 .card-row:last-child { border-bottom: none; }
+.pitch-card-v2 .card-k {
+  font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: rgba(246,245,242,0.55); font-weight: 700;
+}
+.pitch-card-v2 .card-v {
+  font-size: 15px; color: var(--paper); font-weight: 500;
+  text-align: right;
+}
+
+.pitch-story {
+  display: flex; flex-direction: column;
+  gap: 16px;
+  justify-content: center;
+}
+.story-block {
+  background: var(--white);
+  border-radius: 14px;
+  padding: 18px 22px;
+  box-shadow: 0 10px 28px rgba(26,27,46,0.06);
+  border-left: 4px solid var(--flame);
+  position: relative;
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+}
+.story-block:hover {
+  transform: translateX(6px);
+  box-shadow: 0 18px 40px rgba(26,27,46,0.10);
+}
+.story-block .story-tag {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--flame); font-weight: 800;
+  margin-bottom: 6px;
+}
+.story-block p {
+  font-size: 16px; line-height: 1.5; color: var(--ink); margin: 0;
+}
+
+/* ═══════════════ SOMMAIRE ═══════════════ */
+.toc { background: var(--paper); }
+.toc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px 56px; margin-top: 32px; max-width: 1200px; }
+.toc-item {
+  display: flex; align-items: center; gap: 22px;
+  padding: 14px 0; border-bottom: 1px solid rgba(26,27,46,0.08);
+  font-size: clamp(18px, 1.5vw, 22px);
+  transition: transform 0.3s var(--ease-out);
+}
+.toc-item:hover { transform: translateX(8px); }
+.toc-num {
+  width: 44px; height: 44px; border-radius: 999px;
+  background: var(--flame); color: var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 16px; flex-shrink: 0;
+  font-family: var(--font-display);
+  box-shadow: 0 8px 20px rgba(251,82,55,0.28);
+}
+
+/* ═══════════════ STATS ═══════════════ */
+.stats {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 24px; margin-top: 28px;
+}
+.stat {
+  background: var(--white); border-radius: 16px;
+  padding: 22px 24px;
+  box-shadow: 0 10px 30px rgba(26,27,46,0.08);
+  border-left: 4px solid var(--flame);
+  transform-style: preserve-3d;
+  transition: box-shadow 0.3s var(--ease-out);
+}
+.stat:hover { box-shadow: 0 20px 50px rgba(26,27,46,0.14); }
+.stat .num {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 3vw, 44px);
+  font-weight: 900; color: var(--flame); letter-spacing: -0.02em; line-height: 1;
+}
+.stat .lbl { margin-top: 10px; font-size: 14px; color: var(--ink); opacity: 0.75; font-weight: 500; }
+.slide.dark .stat { background: rgba(255,255,255,0.06); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+.slide.dark .stat .lbl { color: var(--paper); opacity: 0.7; }
+
+/* ═══════════════ TWO COLS ═══════════════ */
+.two-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center; }
+.two-cols.flip { grid-template-columns: 1.1fr 1fr; }
+.two-cols img { width: 100%; height: auto; max-height: 65vh; object-fit: contain; border-radius: 12px; filter: drop-shadow(0 20px 40px rgba(26,27,46,0.12)); }
+
+.image-slide { padding: 60px 80px; }
+.image-slide img { width: 100%; height: 100%; object-fit: contain; max-height: 78vh; filter: drop-shadow(0 20px 40px rgba(26,27,46,0.10)); }
+
+/* ═══════════════ DIAGNOSTIC SUNBURST V3 ═══════════════ */
+.diag-wrapper-v2 {
+  display: grid; grid-template-columns: 1.15fr 1fr; gap: 48px;
+  align-items: center; margin-top: 12px; height: 72vh;
+}
+#sunburst {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  aspect-ratio: 1 / 1;
+  max-height: 70vh;
+}
+#sunburst > svg.sb-main { width: 100%; height: 100%; overflow: visible; cursor: default; }
+.sb-rotor { transform-origin: 0 0; }
+
+/* Curseur fixe en haut (triangle qui pointe vers le bas) */
+.sb-cursor {
+  position: absolute;
+  top: -4px; left: 50%;
+  transform: translateX(-50%);
+  width: 26px !important; height: 18px !important;
+  z-index: 5;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 10px rgba(251,82,55,0.45));
+}
+.sb-cursor-label {
+  position: absolute;
+  top: -26px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--flame); font-weight: 800; white-space: nowrap;
+  opacity: 0.85;
+  z-index: 5;
+}
+
+.sb-arc {
+  cursor: pointer;
+  transition: opacity 0.3s var(--ease-out), filter 0.3s var(--ease-out);
+  transform-origin: 0 0;
+  filter: drop-shadow(0 4px 12px rgba(26,27,46,0.10));
+}
+.sb-arc.dim { opacity: 0.18; }
+.sb-arc.active { filter: drop-shadow(0 12px 30px rgba(251,82,55,0.42)); }
+.sb-label { pointer-events: none; font-family: var(--font-display); font-weight: 800; fill: white; transition: opacity 0.3s; }
+.sb-label.dim { opacity: 0.3; }
+.sb-center-group { cursor: pointer; }
+.sb-center { font-family: var(--font-display); fill: var(--ink); text-anchor: middle; }
+
+.diag-panel {
+  background: var(--white);
+  border-radius: 22px;
+  padding: 28px 30px;
+  box-shadow: 0 24px 60px rgba(26,27,46,0.10);
+  border-top: 5px solid var(--flame);
+  min-height: 360px;
+  display: flex; flex-direction: column; justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.diag-panel::before {
+  content: ""; position: absolute; top: -30px; right: -30px;
+  width: 140px; height: 140px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(251,82,55,0.10), transparent 70%);
+  pointer-events: none;
+}
+.diag-panel .panel-state {
+  position: relative;
+  animation: panelFade 0.5s var(--ease-out);
+}
+@keyframes panelFade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.diag-panel .panel-eyebrow {
+  font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--flame); font-weight: 800; margin-bottom: 10px;
+}
+.diag-panel .panel-title {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: 26px; line-height: 1.15; color: var(--ink); margin-bottom: 16px;
+}
+.diag-panel .panel-text {
+  font-size: 15px; line-height: 1.55; color: var(--ink); opacity: 0.85;
+  margin-bottom: 12px;
+}
+.diag-panel .panel-cta {
+  margin-top: 14px; padding-top: 14px;
+  border-top: 1px dashed rgba(26,27,46,0.12);
+  font-size: 12px; color: var(--muted); font-style: italic;
+}
+.diag-panel .panel-tag {
+  display: inline-block; padding: 4px 10px; border-radius: 999px;
+  font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.diag-panel .panel-tag.flame { background: rgba(251,82,55,0.10); color: var(--flame); }
+.diag-panel .panel-tag.red { background: rgba(216,65,44,0.10); color: var(--red); }
+.diag-panel .panel-tag.navy { background: rgba(26,27,46,0.10); color: var(--navy); }
+
+/* Empilement de 2 cartes (SWOT + PESTEL) dans le panneau */
+.diag-cards-stack {
+  display: flex; flex-direction: column; gap: 14px;
+}
+.diag-card {
+  background: rgba(246,245,242,0.55);
+  border-radius: 14px;
+  padding: 16px 18px;
+  border-left: 4px solid var(--flame);
+  transition: transform 0.3s var(--ease-out), opacity 0.3s var(--ease-out);
+}
+.diag-card.empty {
+  background: rgba(26,27,46,0.04);
+  border-left-color: rgba(26,27,46,0.12);
+  opacity: 0.6;
+  padding: 12px 18px;
+}
+.diag-card.empty .panel-eyebrow { color: rgba(26,27,46,0.4); font-style: italic; }
+.diag-card .panel-eyebrow {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--flame); font-weight: 800; margin-bottom: 6px;
+}
+.diag-card .panel-tag {
+  display: inline-block; padding: 2px 9px; border-radius: 999px;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.diag-card .panel-tag.flame { background: rgba(251,82,55,0.10); color: var(--flame); }
+.diag-card .panel-tag.red { background: rgba(216,65,44,0.10); color: var(--red); }
+.diag-card .panel-tag.navy { background: rgba(26,27,46,0.10); color: var(--navy); }
+.diag-card .panel-title {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: 18px; line-height: 1.2; color: var(--ink); margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+.diag-card .panel-text {
+  font-size: 13px; line-height: 1.5; color: var(--ink); opacity: 0.82;
+}
+
+/* ═══════════════ PROBLEMATIQUE ═══════════════ */
+.pb {
+  background: var(--flame); color: var(--paper);
+  align-items: center; justify-content: center; text-align: center;
+  position: relative; overflow: hidden;
+}
+.pb::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at 30% 20%, rgba(255,255,255,0.12), transparent 50%),
+              radial-gradient(circle at 80% 80%, rgba(0,0,0,0.10), transparent 50%);
+  pointer-events: none;
+}
+.pb > * { position: relative; }
+.pb h2 {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(28px, 3.4vw, 50px);
+  line-height: 1.2; max-width: 1300px; margin: 0 auto;
+  letter-spacing: -0.02em;
+}
+.pb .label { margin-top: 28px; font-size: 14px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.85; }
+
+/* ═══════════════ MACRO PLAN ═══════════════ */
+.macro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 24px; }
+.macro-card {
+  background: var(--white); border-radius: 18px; padding: 26px;
+  box-shadow: 0 14px 40px rgba(26,27,46,0.08);
+  display: flex; flex-direction: column; gap: 12px;
+  border-top: 5px solid var(--flame);
+  transform-style: preserve-3d;
+}
+.macro-card .step {
+  display: inline-flex; width: 36px; height: 36px; border-radius: 999px;
+  background: var(--flame); color: var(--paper);
+  align-items: center; justify-content: center; font-weight: 800; font-size: 15px;
+  box-shadow: 0 8px 18px rgba(251,82,55,0.32);
+}
+.macro-card h3 { font-size: 22px; }
+.macro-card .meta-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 8px; margin-top: 12px;
+  padding: 14px; background: var(--paper); border-radius: 12px;
+}
+.macro-card .meta-cell { display: flex; flex-direction: column; gap: 3px; }
+.macro-card .meta-k {
+  font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--muted); font-weight: 700;
+}
+.macro-card .meta-v {
+  font-size: 14px; color: var(--ink); font-weight: 700;
+}
+.macro-card .risk {
+  margin-top: auto; padding-top: 12px; border-top: 1px dashed rgba(26,27,46,0.12);
+  font-size: 13px; color: var(--ink); opacity: 0.85; line-height: 1.5;
+}
+.macro-card .risk-tag {
+  display: inline-block; padding: 2px 8px; border-radius: 6px;
+  background: rgba(216, 65, 44, 0.10); color: var(--red);
+  font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+  margin-right: 6px;
+}
+
+/* ═══════════════ AVANT/APRES ═══════════════ */
+.beforeafter { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 16px; }
+.ba-card {
+  border-radius: 18px; padding: 28px;
+  display: flex; flex-direction: column; gap: 14px;
+  min-height: 50vh;
+  transform-style: preserve-3d;
+}
+.ba-card.before { background: var(--navy); color: var(--paper); border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 20px 50px rgba(0,0,0,0.25); }
+.ba-card.after  { background: var(--white); color: var(--ink); box-shadow: 0 20px 50px rgba(26,27,46,0.10); border-top: 5px solid var(--flame); }
+.ba-card .ba-label { font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; opacity: 0.8; }
+.ba-card.before .ba-label { color: rgba(246,245,242,0.7); }
+.ba-card.after  .ba-label { color: var(--flame); }
+.ba-card h3 { font-size: 26px; }
+.ba-card.before h3 { color: var(--paper); }
+.ba-card ul { list-style: none; padding: 0; margin-top: 10px; }
+.ba-card ul li { padding: 7px 0; padding-left: 20px; position: relative; font-size: 15px; line-height: 1.45; }
+.ba-card ul li::before { content: ""; position: absolute; left: 0; top: 14px; width: 8px; height: 8px; border-radius: 999px; }
+.ba-card.before ul li::before { background: var(--red); }
+.ba-card.after ul li::before { background: var(--flame); box-shadow: 0 0 0 3px rgba(251,82,55,0.18); }
+.ba-card.before ul li { color: rgba(246,245,242,0.85); }
+
+/* ═══════════════ FRISE ═══════════════ */
+.timeline-strip {
+  position: relative; background: var(--paper);
+  border-bottom: 1px solid rgba(26,27,46,0.06);
+  padding: 10px 60px; height: 52px; flex-shrink: 0;
+}
+.slide.dark .timeline-strip { background: var(--navy-soft); border-bottom: 1px solid rgba(255,255,255,0.08); }
+.timeline-track { position: relative; height: 32px; display: grid; grid-template-columns: repeat(10, 1fr); align-items: center; }
+.timeline-line { position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: rgba(26,27,46,0.12); }
+.slide.dark .timeline-line { background: rgba(255,255,255,0.18); }
+.timeline-step { position: relative; display: flex; flex-direction: column; align-items: center; font-size: 10px; text-align: center; }
+.timeline-step .dot {
+  width: 12px; height: 12px; border-radius: 999px;
+  background: var(--white); border: 2px solid rgba(26,27,46,0.3); z-index: 1;
+  transition: all 0.4s var(--ease-out);
+}
+.slide.dark .timeline-step .dot { background: var(--navy-soft); border-color: rgba(255,255,255,0.4); }
+.timeline-step.past .dot { background: var(--flame); border-color: var(--flame); }
+.timeline-step.active .dot {
+  background: var(--flame); border-color: var(--flame);
+  box-shadow: 0 0 0 6px rgba(251, 82, 55, 0.22);
+  transform: scale(1.3);
+  animation: pulseStep 2.4s ease-in-out infinite;
+}
+@keyframes pulseStep {
+  0%, 100% { box-shadow: 0 0 0 6px rgba(251,82,55,0.22); }
+  50% { box-shadow: 0 0 0 11px rgba(251,82,55,0.10); }
+}
+.timeline-step .label { margin-top: 6px; font-size: 10px; color: var(--ink); opacity: 0.6; line-height: 1.2; max-width: 100px; }
+.slide.dark .timeline-step .label { color: var(--paper); opacity: 0.65; }
+.timeline-step.active .label { color: var(--flame); opacity: 1; font-weight: 700; }
+
+.slide.with-timeline { padding-top: 0; justify-content: flex-start; }
+.slide.with-timeline .content { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: calc(var(--pad-y) - 12px) var(--pad-x) 30px; }
+
+/* ═══════════════ DETAILS ═══════════════ */
+.detail-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 48px; align-items: center; }
+.detail-list { display: flex; flex-direction: column; gap: 14px; }
+.detail-list .item {
+  background: var(--white); border-radius: 14px; padding: 18px 22px;
+  box-shadow: 0 10px 24px rgba(26,27,46,0.06);
+  border-left: 4px solid var(--flame);
+  transform-style: preserve-3d;
+}
+.detail-list .item .title { font-weight: 700; font-size: 17px; margin-bottom: 4px; }
+.detail-list .item .body { font-size: 14px; color: var(--ink); opacity: 0.78; line-height: 1.45; }
+.detail-list .item .num { font-family: var(--font-display); font-weight: 900; color: var(--flame); font-size: 26px; margin-bottom: 4px; }
+.slide.dark .detail-list .item { background: rgba(255,255,255,0.06); }
+.slide.dark .detail-list .item .body { color: var(--paper); opacity: 0.78; }
+
+/* ═══════════════ DASHBOARD ═══════════════ */
+.dash {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 20px;
+  margin-top: 14px;
+  height: 70vh;
+}
+.dash-cell {
+  background: var(--white); border-radius: 18px; padding: 22px;
+  box-shadow: 0 14px 40px rgba(26,27,46,0.08);
+  display: flex; flex-direction: column; gap: 10px;
+  min-height: 0;
+  transform-style: preserve-3d;
+}
+.dash-cell .title { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+.dash-cell .value { font-family: var(--font-display); font-weight: 900; color: var(--flame); font-size: clamp(36px, 3vw, 48px); line-height: 1; }
+.dash-cell .sub   { font-size: 13px; color: var(--ink); opacity: 0.7; }
+
+.gauge { margin-top: auto; }
+.gauge-track { height: 8px; background: rgba(26,27,46,0.08); border-radius: 999px; overflow: hidden; }
+.gauge-fill { height: 100%; background: var(--flame); border-radius: 999px; width: 0%; }
+.gauge-fill.green { background: var(--green); }
+.gauge .labels { display: flex; justify-content: space-between; font-size: 11px; margin-top: 4px; color: var(--muted); }
+
+.bars { display: flex; align-items: flex-end; gap: 12px; height: 100%; padding-top: 18px; min-height: 0; }
+.bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+.bar-col .bar { width: 80%; background: var(--flame); border-radius: 6px 6px 0 0; position: relative; min-height: 4px; height: 0; transition: height 1.2s var(--ease-out); }
+.bar-col .bar.muted { background: var(--navy); opacity: 0.45; }
+.bar-col .bar .val { position: absolute; top: -22px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 700; color: var(--ink); }
+.bar-col .lbl { font-size: 11px; margin-top: 8px; color: var(--muted); text-align: center; }
+
+.donut-wrapper { display: flex; align-items: center; gap: 18px; height: 100%; }
+.donut { width: 110px; height: 110px; flex-shrink: 0; }
+.donut .ring-bg { stroke: rgba(26,27,46,0.08); }
+.donut .ring-fg { stroke: var(--flame); transition: stroke-dashoffset 1.4s var(--ease-out); stroke-dashoffset: 163.36; }
+.donut .label { font-family: var(--font-display); font-weight: 900; font-size: 22px; fill: var(--flame); }
+.donut-detail { font-size: 13px; color: var(--ink); opacity: 0.78; line-height: 1.45; }
+
+.kpi-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: auto; }
+.kpi-mini-cell { padding: 10px 12px; background: var(--paper); border-radius: 10px; }
+.kpi-mini-cell .v { font-family: var(--font-display); font-weight: 800; color: var(--flame); font-size: 22px; line-height: 1; }
+.kpi-mini-cell .k { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+/* ═══════════════ QUOTE / END ═══════════════ */
+.quote {
+  background: var(--flame); color: var(--paper);
+  justify-content: center; text-align: center;
+  position: relative; overflow: hidden;
+}
+.quote::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06), transparent 60%);
+  pointer-events: none;
+}
+.quote > * { position: relative; }
+.quote .quote-text {
+  font-family: var(--font-display); font-size: clamp(30px, 3.2vw, 50px);
+  font-weight: 800; line-height: 1.18; max-width: 1300px; margin: 0 auto;
+  letter-spacing: -0.02em;
+}
+.quote .by { margin-top: 24px; font-size: 16px; opacity: 0.85; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* ═══════════════ PLAN STRIP (mini-frise déroulé) ═══════════════ */
+.plan-strip {
+  position: fixed; top: 0; left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex; align-items: center;
+  gap: 0;
+  padding: 10px 22px;
+  background: rgba(246, 245, 242, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 6px 24px rgba(26,27,46,0.08);
+  border: 1px solid rgba(26,27,46,0.06);
+  border-top: none;
+  transition: opacity 0.4s var(--ease-out), transform 0.4s var(--ease-out);
+  pointer-events: none;
+}
+body.plan-hidden .plan-strip,
+body.plan-hidden-by-timeline .plan-strip {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-100%);
+  pointer-events: none;
+}
+.plan-step {
+  display: flex; align-items: center; gap: 7px;
+  padding: 5px 12px;
+  font-size: 11px; font-weight: 600;
+  color: rgba(26, 27, 46, 0.55);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  position: relative;
+  transition: color 0.3s var(--ease-out);
+}
+.plan-step + .plan-step::before {
+  content: ""; display: inline-block;
+  width: 14px; height: 1px;
+  background: rgba(26,27,46,0.18);
+  margin-right: 5px;
+  margin-left: -7px;
+}
+.plan-step .step-dot {
+  width: 8px; height: 8px; border-radius: 999px;
+  background: rgba(26,27,46,0.20);
+  transition: all 0.3s var(--ease-out);
+  flex-shrink: 0;
+}
+.plan-step.is-past .step-dot { background: var(--flame); opacity: 0.55; }
+.plan-step.is-active {
+  color: var(--flame);
+  font-weight: 800;
+}
+.plan-step.is-active .step-dot {
+  background: var(--flame);
+  box-shadow: 0 0 0 4px rgba(251,82,55,0.20);
+  transform: scale(1.2);
+}
+
+/* Variante sur fond sombre */
+body.dark-plan .plan-strip {
+  background: rgba(26, 27, 46, 0.85);
+  border-color: rgba(255,255,255,0.10);
+}
+body.dark-plan .plan-step { color: rgba(246,245,242,0.55); }
+body.dark-plan .plan-step + .plan-step::before { background: rgba(255,255,255,0.15); }
+body.dark-plan .plan-step .step-dot { background: rgba(255,255,255,0.25); }
+body.dark-plan .plan-step.is-active { color: var(--flame); }
+
+/* ═══════════════ NAV ═══════════════ */
+.progress { position: fixed; bottom: 0; left: 0; right: 0; height: 3px; background: rgba(26,27,46,0.08); z-index: 100; }
+.progress .bar { height: 100%; background: var(--flame); transition: width 0.4s var(--ease-out); box-shadow: 0 0 12px rgba(251,82,55,0.6); }
+.counter { position: fixed; bottom: 14px; right: 22px; z-index: 100; font-family: var(--font-display); font-size: 12px; font-weight: 600; letter-spacing: 0.1em; color: var(--ink); opacity: 0.55; }
+.counter .current { color: var(--flame); font-weight: 800; }
+.hint { position: fixed; bottom: 14px; left: 22px; z-index: 100; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); opacity: 0.4; }
+
+.spacer-sm { height: 14px; }
+.spacer { height: 26px; }
+.spacer-lg { height: 48px; }
+
+/* ═══════════════ FUNNEL HTML ═══════════════ */
+.funnel-wrap {
+  display: grid; grid-template-columns: 1.45fr 1fr;
+  gap: 36px; align-items: center;
+  margin-top: 20px;
+}
+.funnel-col { display: flex; flex-direction: column; gap: 10px; }
+.funnel-row {
+  display: grid; grid-template-columns: 290px 1fr;
+  align-items: center; gap: 18px;
+}
+.funnel-label { text-align: right; }
+.funnel-num {
+  font-family: var(--font-display); font-weight: 900;
+  color: var(--ink); font-size: clamp(22px, 2vw, 30px); line-height: 1;
+  letter-spacing: -0.01em;
+}
+.funnel-tag {
+  font-size: 12px; color: var(--ink); opacity: 0.65;
+  margin-top: 4px; line-height: 1.3;
+}
+.funnel-bar {
+  width: var(--w, 100%);
+  height: 36px;
+  background: linear-gradient(135deg, var(--bg) 0%, var(--bg) 70%, rgba(255,255,255,0.15) 100%);
+  border-radius: 8px;
+  box-shadow: 0 6px 16px rgba(26,27,46,0.10);
+  transform-origin: left center;
+  transition: width 0.7s var(--ease-out);
+}
+.slide.is-active .funnel-row .funnel-bar {
+  animation: funnelGrow 0.7s var(--ease-out) backwards;
+}
+.slide.is-active .funnel-row:nth-child(1) .funnel-bar { animation-delay: 0.10s; }
+.slide.is-active .funnel-row:nth-child(2) .funnel-bar { animation-delay: 0.22s; }
+.slide.is-active .funnel-row:nth-child(3) .funnel-bar { animation-delay: 0.34s; }
+.slide.is-active .funnel-row:nth-child(4) .funnel-bar { animation-delay: 0.46s; }
+.slide.is-active .funnel-row:nth-child(5) .funnel-bar { animation-delay: 0.58s; }
+@keyframes funnelGrow {
+  from { transform: scaleX(0); opacity: 0; }
+  to   { transform: scaleX(1); opacity: 1; }
+}
+
+.funnel-aside {
+  background: var(--white);
+  border-radius: 18px; padding: 24px 26px;
+  box-shadow: 0 18px 50px rgba(26,27,46,0.08);
+  border-top: 5px solid var(--flame);
+}
+.funnel-aside-eyebrow {
+  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--flame); font-weight: 800; margin-bottom: 14px;
+}
+.funnel-split {
+  display: flex; flex-direction: column; gap: 12px;
+  border-bottom: 1px dashed rgba(26,27,46,0.12);
+  padding-bottom: 14px; margin-bottom: 14px;
+}
+.funnel-split-row {
+  display: flex; align-items: baseline; gap: 14px;
+}
+.funnel-split-v {
+  font-family: var(--font-display); font-weight: 900;
+  color: var(--flame); font-size: 38px; line-height: 1;
+  letter-spacing: -0.02em; min-width: 80px;
+}
+.funnel-split-k {
+  font-size: 14px; color: var(--ink); opacity: 0.85; line-height: 1.4;
+}
+.funnel-note {
+  font-size: 13px; color: var(--ink); opacity: 0.78; line-height: 1.5;
+}
+
+/* ═══════════════ LEÇONS TERRAIN ═══════════════ */
+.lessons-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-top: 22px;
+}
+.lesson-card {
+  background: var(--white);
+  border-radius: 18px;
+  padding: 22px 26px;
+  box-shadow: 0 14px 36px rgba(26,27,46,0.07);
+  border-left: 5px solid var(--flame);
+  display: flex; flex-direction: column; gap: 8px;
+  transform-style: preserve-3d;
+  position: relative;
+  overflow: hidden;
+}
+.lesson-card::before {
+  content: ""; position: absolute; top: -30px; right: -30px;
+  width: 110px; height: 110px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(251,82,55,0.10), transparent 70%);
+  pointer-events: none;
+}
+.lesson-card .lesson-num {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--flame);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  position: relative;
+}
+.lesson-card .lesson-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 21px;
+  color: var(--ink);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  position: relative;
+}
+.lesson-card .lesson-body {
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink); opacity: 0.82;
+  position: relative;
+}
+
+.lessons-bridge {
+  margin-top: 22px;
+  padding: 16px 24px;
+  background: var(--flame);
+  color: var(--paper);
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  font-family: var(--font-display);
+  letter-spacing: -0.01em;
+  box-shadow: 0 14px 32px rgba(251,82,55,0.30);
+  position: relative;
+  overflow: hidden;
+}
+.lessons-bridge::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.10), transparent 60%);
+  pointer-events: none;
+}
+
+/* ═══════════════ RECOMMANDATIONS GRID ═══════════════ */
+.reco-grid {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 40px;
+  align-items: center;
+  margin-top: 18px;
+  height: 70vh;
+}
+.reco-img {
+  display: flex; align-items: center; justify-content: center;
+  height: 100%;
+}
+.reco-img img {
+  width: 100%; height: auto; max-height: 65vh; object-fit: contain;
+  filter: drop-shadow(0 20px 40px rgba(26,27,46,0.12));
+  border-radius: 12px;
+}
+.reco-list {
+  display: flex; flex-direction: column;
+  gap: 12px;
+}
+.reco-item {
+  display: flex; gap: 16px; align-items: flex-start;
+  background: var(--white);
+  border-radius: 14px; padding: 16px 18px;
+  box-shadow: 0 10px 28px rgba(26,27,46,0.06);
+  border-left: 4px solid var(--flame);
+  transition: transform 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out);
+}
+.reco-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 16px 36px rgba(26,27,46,0.10);
+}
+.reco-num {
+  flex-shrink: 0;
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--flame); color: var(--paper);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 900; font-size: 17px;
+  box-shadow: 0 6px 14px rgba(251,82,55,0.30);
+}
+.reco-content { flex: 1; min-width: 0; }
+.reco-title {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: 17px; color: var(--ink); margin-bottom: 6px;
+}
+.reco-problem {
+  font-size: 13px; line-height: 1.45; color: var(--ink); opacity: 0.78;
+}
+.reco-tag {
+  display: inline-block; margin-right: 6px;
+  padding: 2px 7px; border-radius: 5px;
+  background: rgba(251,82,55,0.10); color: var(--flame);
+  font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase;
+}
+
+/* ═══════════════ GANTT HTML ═══════════════ */
+.gantt-box {
+  background: var(--white);
+  border-radius: 18px;
+  padding: 22px 24px;
+  box-shadow: 0 18px 50px rgba(26,27,46,0.08);
+  border-left: 5px solid var(--flame);
+}
+.gantt-months {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  font-size: 10px; letter-spacing: 0.04em;
+  color: var(--muted); font-weight: 600;
+  padding-bottom: 6px; margin-bottom: 12px;
+  border-bottom: 1px dashed rgba(26,27,46,0.10);
+}
+.gantt-months span:nth-child(odd) { text-align: left; }
+.gantt-months span:nth-child(even) { text-align: center; }
+.gantt-months span:last-child { text-align: right; }
+.gantt-row {
+  display: grid; grid-template-columns: 170px 1fr;
+  gap: 14px; align-items: center;
+  margin-bottom: 10px;
+}
+.gantt-row-label {
+  font-size: 12px; font-weight: 700; color: var(--ink);
+  text-align: right;
+}
+.gantt-track {
+  position: relative;
+  height: 14px;
+  background: rgba(26,27,46,0.06);
+  border-radius: 999px;
+}
+.gantt-bar {
+  position: absolute; top: 0; bottom: 0;
+  border-radius: 999px;
+  transform-origin: left center;
+  animation: ganttGrow 0.6s var(--ease-out) backwards;
+}
+.gantt-bar.poc     { background: var(--flame); }
+.gantt-bar.impl    { background: #FBA37F; }
+.gantt-bar.product { background: var(--navy); }
+.slide.is-active .gantt-row:nth-child(2) .gantt-bar { animation-delay: 0.22s; }
+.slide.is-active .gantt-row:nth-child(3) .gantt-bar { animation-delay: 0.32s; }
+.slide.is-active .gantt-row:nth-child(4) .gantt-bar { animation-delay: 0.42s; }
+.slide.is-active .gantt-row:nth-child(5) .gantt-bar { animation-delay: 0.52s; }
+@keyframes ganttGrow {
+  from { transform: scaleX(0); opacity: 0; }
+  to   { transform: scaleX(1); opacity: 1; }
+}
+.gantt-legend {
+  display: flex; gap: 18px; flex-wrap: wrap;
+  margin-top: 14px; padding-top: 12px;
+  border-top: 1px dashed rgba(26,27,46,0.10);
+}
+.gantt-legend-item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: var(--ink); opacity: 0.78;
+}
+.gantt-legend-item .dot {
+  width: 10px; height: 10px; border-radius: 999px;
+}
+.gantt-legend-item .dot.poc     { background: var(--flame); }
+.gantt-legend-item .dot.impl    { background: #FBA37F; }
+.gantt-legend-item .dot.product { background: var(--navy); }
+.gantt-note {
+  margin-top: 10px; font-size: 11px; font-style: italic;
+  color: var(--muted);
+}
+
+/* ═══════════════ RADAR HTML ═══════════════ */
+.radar-wrap {
+  display: grid; grid-template-columns: 1.1fr 1fr;
+  gap: 36px; align-items: center;
+  margin-top: 18px;
+  height: 68vh;
+}
+.radar-svg-wrap {
+  display: flex; align-items: center; justify-content: center;
+}
+.radar-svg { width: 100%; max-width: 560px; height: auto; }
+.radar-svg .radar-before,
+.radar-svg .radar-before-dots,
+.radar-svg .radar-after,
+.radar-svg .radar-after-dots {
+  opacity: 0;
+}
+.slide.is-active .radar-svg .radar-before { animation: radarFade 0.7s var(--ease-out) 0.25s forwards; }
+.slide.is-active .radar-svg .radar-before-dots { animation: radarFade 0.5s var(--ease-out) 0.40s forwards; }
+.slide.is-active .radar-svg .radar-after { animation: radarFade 0.9s var(--ease-out) 0.55s forwards; }
+.slide.is-active .radar-svg .radar-after-dots { animation: radarFade 0.5s var(--ease-out) 0.75s forwards; }
+@keyframes radarFade {
+  from { opacity: 0; transform: scale(0.96); transform-origin: 200px 200px; }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.radar-aside {
+  display: flex; flex-direction: column;
+  gap: 18px;
+}
+.radar-legend {
+  display: flex; flex-direction: column; gap: 14px;
+  padding: 18px 20px;
+  background: var(--white);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(26,27,46,0.06);
+}
+.radar-legend-item {
+  display: flex; align-items: center; gap: 14px;
+}
+.radar-square {
+  width: 24px; height: 24px; border-radius: 6px;
+  flex-shrink: 0;
+}
+.radar-square.before { background: rgba(26,27,46,0.15); border: 2px solid var(--navy); }
+.radar-square.after  { background: rgba(251,82,55,0.18); border: 2px solid var(--flame); }
+.radar-legend-k { font-weight: 800; font-size: 13px; color: var(--ink); }
+.radar-legend-v { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.radar-highlight {
+  background: var(--white);
+  border-radius: 14px;
+  padding: 18px 22px;
+  border-left: 5px solid var(--flame);
+  box-shadow: 0 12px 30px rgba(26,27,46,0.06);
+}
+.radar-highlight-eyebrow {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--flame); font-weight: 800; margin-bottom: 6px;
+}
+.radar-highlight-title {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: 22px; color: var(--ink); margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+.radar-highlight-body {
+  font-size: 13px; color: var(--ink); opacity: 0.82; line-height: 1.5;
+}
+.radar-note {
+  font-size: 11px; color: var(--muted); font-style: italic;
+}
+
+/* ═══════════════ DSI PIPELINE ═══════════════ */
+.dsi-pipeline {
+  display: flex; align-items: stretch; gap: 0;
+  margin-top: 28px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 16px;
+  padding: 22px 18px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.dsi-step {
+  flex: 1;
+  display: flex; flex-direction: column;
+  padding: 10px 12px;
+  position: relative;
+  min-width: 0;
+}
+.dsi-step.highlight {
+  background: rgba(251,82,55,0.10);
+  border-radius: 10px;
+  outline: 1px solid rgba(251,82,55,0.35);
+}
+.dsi-step .dsi-num {
+  display: inline-flex; width: 28px; height: 28px;
+  border-radius: 999px; background: var(--flame); color: var(--paper);
+  align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 800; font-size: 13px;
+  margin-bottom: 8px;
+  box-shadow: 0 6px 14px rgba(251,82,55,0.32);
+}
+.dsi-step .dsi-title {
+  font-family: var(--font-display); font-weight: 800; font-size: 15px;
+  color: var(--paper); margin-bottom: 4px;
+}
+.dsi-step .dsi-sub {
+  font-size: 12px; line-height: 1.4; color: rgba(246,245,242,0.7);
+}
+.dsi-arrow {
+  flex: 0 0 18px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--flame);
+  font-size: 14px;
+}
+.dsi-arrow::before {
+  content: "→"; font-weight: 900; opacity: 0.65;
+}
+
+.dsi-out {
+  display: flex; align-items: center; gap: 18px;
+  margin-top: 18px;
+  background: var(--flame); color: var(--paper);
+  border-radius: 14px;
+  padding: 16px 22px;
+  box-shadow: 0 12px 30px rgba(251,82,55,0.30);
+}
+.dsi-out .dsi-out-icon {
+  font-size: 24px; font-weight: 800; opacity: 0.85;
+}
+.dsi-out .dsi-out-text { font-size: 15px; line-height: 1.5; }
+
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+  <div class="slides" id="slides">
+
+    <!-- ═══════════════ 1. PAGE DE GARDE ═══════════════ -->
+    <section class="slide cover" data-name="cover">
+      <img class="logo" src="assets/logo.png" alt="Air Cloud" data-tilt data-tilt-max="8" data-tilt-glare data-tilt-max-glare="0.15">
+      <span class="pill" data-anim="1">Soutenance · Rapport de mission</span>
+      <h1 data-anim="2">Louis Delporte</h1>
+      <div class="meta" data-anim="3">
+        <div>Spoutnik 62 — Rocket School</div>
+        <div>Entreprise d'accueil : <strong>Air Cloud</strong></div>
+        <div>Septembre 2025 — Juillet 2026</div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ 2. PITCH PERSO ═══════════════ -->
+    <section class="slide pitch">
+      <span class="eyebrow" data-anim="1">Le pitch en 90 secondes</span>
+      <h2 data-anim="2">Qui je suis</h2>
+      <div class="spacer-sm"></div>
+      <div class="pitch-grid-v2">
+        <div class="pitch-card-v2" data-tilt data-tilt-max="6" data-tilt-glare data-tilt-max-glare="0.12" data-anim="3">
+          <div class="avatar-glow"></div>
+          <div class="name">Louis Delporte</div>
+          <div class="role">Growth Marketer · Air Cloud</div>
+          <div class="card-divider"></div>
+          <div class="card-row"><span class="card-k">Âge</span><span class="card-v">23 ans</span></div>
+          <div class="card-row"><span class="card-k">Ville</span><span class="card-v">Strasbourg</span></div>
+          <div class="card-row"><span class="card-k">Promo</span><span class="card-v">Spoutnik 62 · Rocket School</span></div>
+          <div class="card-row"><span class="card-k">Période</span><span class="card-v">Sept. 2025 → juil. 2026</span></div>
+        </div>
+
+        <div class="pitch-story">
+          <div class="story-block" data-anim="4">
+            <div class="story-tag">Parcours</div>
+            <p>Première alternance quittée par fidélité à mes valeurs. Été passé en restauration saisonnière pour rester indépendant financièrement, sans interrompre l'école.</p>
+          </div>
+          <div class="story-block" data-anim="5">
+            <div class="story-tag">Mission</div>
+            <p>Arrivé chez Air Cloud le 22 septembre 2025 pour structurer une fonction growth qui n'existait pas en tant que système.</p>
+          </div>
+          <div class="story-block" data-anim="6">
+            <div class="story-tag">Identité pro</div>
+            <p>Profil hybride : growth marketing, automation, vibe coding, et désormais une vraie appétence commerciale.</p>
+          </div>
+          <div class="story-block" data-anim="7">
+            <div class="story-tag">Suite</div>
+            <p>Année 2 calée : MBA marketing digital à l'ISEG Strasbourg, en parallèle d'Air Cloud.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ 3. SOMMAIRE ═══════════════ -->
+    <section class="slide toc">
+      <span class="eyebrow" data-anim="1">Plan de la présentation</span>
+      <h2 data-anim="2">Le déroulé</h2>
+      <div class="toc-grid">
+        <div class="toc-item" data-anim="3"><div class="toc-num">1</div><div>Contexte & enjeux</div></div>
+        <div class="toc-item" data-anim="3"><div class="toc-num">2</div><div>Audit & diagnostic</div></div>
+        <div class="toc-item" data-anim="4"><div class="toc-num">3</div><div>Problématique</div></div>
+        <div class="toc-item" data-anim="4"><div class="toc-num">4</div><div>Macro plan d'action</div></div>
+        <div class="toc-item" data-anim="5"><div class="toc-num">5</div><div>Détails des actions</div></div>
+        <div class="toc-item" data-anim="5"><div class="toc-num">6</div><div>Réalisations & preuves</div></div>
+        <div class="toc-item" data-anim="6"><div class="toc-num">7</div><div>Résultats & dashboard</div></div>
+        <div class="toc-item" data-anim="6"><div class="toc-num">8</div><div>Bilan, projection, Q&A</div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ 4. CONTEXTE ═══════════════ -->
+    <section class="slide paper">
+      <span class="eyebrow" data-anim="1">Contexte · Présentation de l'entreprise</span>
+      <h2 data-anim="2">Air Cloud, intégrateur Microsoft<br>en pleine accélération</h2>
+      <div class="spacer"></div>
+      <p class="lead" data-anim="3">PME alsacienne fondée en 2020, basée à Illkirch. Intégrateur Microsoft 365 et Azure pour les PME et ETI françaises. Diversification SIRH via Air Cloud RH (Factorial) depuis octobre 2025. Écosystème de groupe : Air Cloud Sud-Est, Air Cloud Ouest, Air Cloud Iberica, Klyra, Laizy.</p>
+      <div class="stats">
+        <div class="stat" data-anim="4" data-tilt data-tilt-max="6"><div class="num" data-count="41.7" data-suffix="%" data-prefix="+" data-decimals="1">+41,7%</div><div class="lbl">Croissance CA 2024-2025</div></div>
+        <div class="stat" data-anim="5" data-tilt data-tilt-max="6"><div class="num" data-count="6.8" data-suffix=" M€" data-decimals="1">6,8 M€</div><div class="lbl">CA 2025</div></div>
+        <div class="stat" data-anim="6" data-tilt data-tilt-max="6"><div class="num" data-count="870">870</div><div class="lbl">Clients actifs fin 2025</div></div>
+        <div class="stat" data-anim="7" data-tilt data-tilt-max="6"><div class="num" data-count="0.91" data-suffix="%" data-decimals="2">0,91%</div><div class="lbl">Taux de churn</div></div>
+        <div class="stat" data-anim="8" data-tilt data-tilt-max="6"><div class="num" data-count="30" data-prefix="~">~30</div><div class="lbl">Collaborateurs</div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ 5. AUDIT INTERNE ═══════════════ -->
+    <section class="slide dark">
+      <span class="eyebrow" data-anim="1">Audit & diagnostic interne</span>
+      <h2 data-anim="2">La situation marketing au 22 septembre 2025</h2>
+      <div class="spacer-lg"></div>
+      <div class="beforeafter" style="grid-template-columns: 1fr;">
+        <div class="ba-card before" style="background:rgba(255,255,255,0.04); min-height:auto;" data-tilt data-tilt-max="4" data-anim="3">
+          <div class="ba-label">Le constat à mon arrivée</div>
+          <ul>
+            <li>Listes <strong>Be Cloud</strong> poussées aux commerciaux, trop petites et peu pertinentes, avec une rotation sur les ~1 000 mêmes comptes pendant des semaines</li>
+            <li>CRM <strong>fragmenté</strong> entre Dynamics (Be Cloud), Coefficy et HubSpot, la moitié des commerciaux sur chaque outil</li>
+            <li>Aucun mécanisme automatisé pour <strong>capter les signaux d'intérêt</strong> prospect (ouvertures, clics)</li>
+            <li>Crédits Lemlist, Full Enrich, Societe.info <strong>déjà payés</strong> mais personne pour les exploiter</li>
+            <li>60 000 comptes HubSpot, mais les commerciaux avaient fait le tour de tout ce qui était <strong>immédiatement exploitable</strong></li>
+            <li>Pas de manager marketing dédié, l'effort retombait sur Maxime Christiany (Team Leader commercial)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ 6. MARCHE ═══════════════ -->
+    <section class="slide paper">
+      <span class="eyebrow" data-anim="1">Audit & diagnostic · Le marché</span>
+      <h2 data-anim="2">Une concurrence directe au sein<br>de l'écosystème Be Cloud</h2>
+      <div class="two-cols flip" style="margin-top:24px;">
+        <div>
+          <p class="lead" data-anim="3">10 revendeurs partenaires Be Cloud ciblent les mêmes PME / ETI sur Microsoft 365 et Azure. Marché total ~2,9 M€ en novembre 2025.</p>
+          <div class="spacer-sm"></div>
+          <p data-anim="4">En février 2025, Air Cloud était <strong>deuxième</strong> derrière Arpeje. Neuf mois plus tard, l'ordre change.</p>
+          <div class="stats" style="margin-top:24px;">
+            <div class="stat" data-anim="5" data-tilt data-tilt-max="5"><div class="num" data-count="29.8" data-suffix="%" data-prefix="+" data-decimals="1">+29,8%</div><div class="lbl">Croissance Air Cloud sur 9 mois</div></div>
+            <div class="stat" data-anim="6" data-tilt data-tilt-max="5"><div class="num" data-count="5.3" data-suffix="%" data-prefix="+" data-decimals="1">+5,3%</div><div class="lbl">Croissance marché Be Cloud</div></div>
+          </div>
+        </div>
+        <img src="assets/matrice.png" alt="Matrice positionnement concurrents" data-anim="3" data-tilt data-tilt-max="6">
+      </div>
+    </section>
+
+    <!-- ═══════════════ 7. SUNBURST DIAGNOSTIC ═══════════════ -->
+    <section class="slide paper" data-name="diagnostic">
+      <span class="eyebrow" data-anim="1">Synthèse diagnostic</span>
+      <h2 data-anim="2">Du micro au macro : tout converge vers la structuration</h2>
+      <div class="diag-wrapper-v2">
+        <div id="sunburst" data-anim="3">
+          <svg class="sb-cursor" width="28" height="20" viewBox="0 0 28 20">
+            <path d="M14 20 L0 0 L28 0 Z" fill="#FB5237"/>
+          </svg>
+        </div>
+        <div class="diag-panel" id="diagPanel" data-anim="4">
+          <div class="panel-state" data-state="default">
+            <div class="panel-eyebrow">Lecture du schéma</div>
+            <h3 class="panel-title">Une boussole pour la mission</h3>
+            <p class="panel-text">Le schéma met en regard le <strong>micro</strong> (Air Cloud, au centre), l'<strong>interne</strong> (SWOT, anneau intermédiaire) et le <strong>macro</strong> (PESTEL, anneau extérieur).</p>
+            <p class="panel-text">Deux facteurs PESTEL ressortent en flame : <strong>Techno (IA)</strong> et <strong>Légal (NIS2)</strong>. Ils alignent l'offre Air Cloud avec la demande du marché et justifient le besoin d'une fonction growth structurée.</p>
+            <div class="panel-cta">Cliquez un segment pour le détail · cliquez le centre pour revenir</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ 8. PROBLÉMATIQUE ═══════════════ -->
+    <section class="slide pb">
+      <div class="label" data-anim="1">Problématique</div>
+      <div class="spacer-sm"></div>
+      <h2 data-anim="2">
+        Comment structurer une stratégie d'acquisition numérique à haut volume<br>
+        afin de produire et qualifier <em style="color:white; text-decoration:underline; text-underline-offset:8px;">~1 200 comptes et contacts ciblés par mois</em><br>
+        et d'augmenter de <em style="color:white; text-decoration:underline; text-underline-offset:8px;">15 % le taux de conversion commercial</em><br>
+        d'Air Cloud d'ici fin 2026 ?
+      </h2>
+    </section>
+
+    <!-- ═══════════════ 9. MACRO PLAN ═══════════════ -->
+    <section class="slide paper">
+      <span class="eyebrow" data-anim="1">Le macro plan d'action</span>
+      <h2 data-anim="2">Trois chantiers structurants sur 9 mois</h2>
+      <div class="macro-grid">
+        <div class="macro-card" data-tilt data-tilt-max="6" data-tilt-glare data-tilt-max-glare="0.08" data-anim="3">
+          <div class="step">1</div>
+          <h3>Reconquérir la donnée</h3>
+          <p style="font-size:15px; line-height:1.45; opacity:0.85;">Migration CRM, qualité data, fiabilisation des champs et des workflows commerciaux.</p>
+          <div class="meta-grid">
+            <div class="meta-cell"><span class="meta-k">Durée</span><span class="meta-v">Sept 2025 → juin 2026</span></div>
+            <div class="meta-cell"><span class="meta-k">Budget</span><span class="meta-v">0 € extra</span></div>
+          </div>
+          <div class="risk"><span class="risk-tag">Risque clé</span> Double saisie HubSpot / Dynamics persistante côté commerciaux, qui dégrade la qualité du pilotage marketing.</div>
+        </div>
+        <div class="macro-card" data-tilt data-tilt-max="6" data-tilt-glare data-tilt-max-glare="0.08" data-anim="4">
+          <div class="step">2</div>
+          <h3>Industrialiser l'acquisition</h3>
+          <p style="font-size:15px; line-height:1.45; opacity:0.85;">Listes ciblées, campagnes multicanales (mail + LinkedIn), Blitz Days, webinaires, signaux automatisés.</p>
+          <div class="meta-grid">
+            <div class="meta-cell"><span class="meta-k">Durée</span><span class="meta-v">Oct 2025 → continu</span></div>
+            <div class="meta-cell"><span class="meta-k">Budget</span><span class="meta-v">~11 k€/an</span></div>
+          </div>
+          <div class="risk"><span class="risk-tag">Risque clé</span> Bots de sécurité mail qui polluent les signaux d'ouverture / clic (corrigé par filtre n8n).</div>
+        </div>
+        <div class="macro-card" data-tilt data-tilt-max="6" data-tilt-glare data-tilt-max-glare="0.08" data-anim="5">
+          <div class="step">3</div>
+          <h3>Construire l'outil manquant</h3>
+          <p style="font-size:15px; line-height:1.45; opacity:0.85;">Application interne <em>Air Cloud Growth Hub</em> : base unifiée, 13 modules, IA intégrée, automation.</p>
+          <div class="meta-grid">
+            <div class="meta-cell"><span class="meta-k">Durée</span><span class="meta-v">Mars 2026 → continu</span></div>
+            <div class="meta-cell"><span class="meta-k">Budget</span><span class="meta-v">Temps libre</span></div>
+          </div>
+          <div class="risk"><span class="risk-tag">Risque clé</span> Bus factor à 1, code non documenté en cas de transition (à mitiger en 2026-2027).</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ 10. AVANT / APRES ═══════════════ -->
+    <section class="slide paper">
+      <span class="eyebrow" data-anim="1">Le pain point résolu en une image</span>
+      <h2 data-anim="2">L'avant / après côté commercial</h2>
+      <div class="beforeafter">
+        <div class="ba-card before" data-tilt data-tilt-max="6" data-anim="3">
+          <div class="ba-label">Avant — Septembre 2025</div>
+          <h3>Le bricolage</h3>
+          <ul>
+            <li>Mêmes 1 000 comptes rappelés en boucle</li>
+            <li>CRM fragmenté : 3 outils en parallèle</li>
+            <li>Listes paramétrées le soir, à la main</li>
+            <li>Signaux d'intérêt jamais captés</li>
+            <li>Crédits outils déjà payés, non exploités</li>
+            <li>Maxime portait le sujet en plus de son rôle commercial</li>
+          </ul>
+        </div>
+        <div class="ba-card after" data-tilt data-tilt-max="6" data-anim="4">
+          <div class="ba-label">Après — Juin 2026</div>
+          <h3>Le système</h3>
+          <ul>
+            <li>~1 200 nouveaux comptes ciblés par mois</li>
+            <li>CRM unifié : Air Cloud Growth Hub</li>
+            <li>Enrichissement automatisé (INSEE, Societe.info, Full Enrich)</li>
+            <li>Signaux mail + LinkedIn captés et triés (filtre anti-bots)</li>
+            <li>SmartLead opérationnel avec ice breakers IA</li>
+            <li>5 Blitz Days et 3 webinaires Factorial alimentés</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ 11. METHODO + FRISE ═══════════════ -->
+    <section class="slide dark with-timeline" data-step="0">
+      <div class="timeline-strip">
+        <div class="timeline-track">
+          <div class="timeline-step"><div class="dot"></div><div class="label">22 sept 2025<br>Arrivée</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Oct 2025<br>Air Cloud RH</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Nov 2025<br>Migration CRM</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Janv 2026<br>1er Blitz Day</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Mars 2026<br>Growth Hub</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Avril 2026<br>Webinaires</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Mai 2026<br>Pivot SmartLead</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Juin 2026<br>CRM interne · 70%</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Juil 2026<br>Fin alternance</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">2026-27<br>Recommandations</div></div>
+          <div class="timeline-line"></div>
+        </div>
+      </div>
+      <div class="content">
+        <span class="eyebrow" data-anim="1">Méthodologie</span>
+        <h2 data-anim="2">9 mois, 3 chantiers, une trajectoire</h2>
+        <div class="spacer"></div>
+        <p class="lead" data-anim="3">La frise ci-dessus jalonne les moments-clés de la mission. Elle vous accompagne pendant toute la présentation, pour situer chaque action dans le temps.</p>
+        <div class="spacer-sm"></div>
+        <p style="opacity:0.85;" data-anim="4">Trois actions sont déroulées dans les prochains slides, dans l'ordre de leur lancement opérationnel. Pour chacune : <strong style="color:var(--flame);">l'objectif</strong>, <strong style="color:var(--flame);">les moyens</strong>, <strong style="color:var(--flame);">la méthode</strong>, et <strong style="color:var(--flame);">les preuves chiffrées</strong>.</p>
+      </div>
+    </section>
+
+    <!-- ═══════════════ 12. ACTION 1 ═══════════════ -->
+    <section class="slide paper with-timeline" data-step="2">
+      <div class="timeline-strip">
+        <div class="timeline-track">
+          <div class="timeline-step"><div class="dot"></div><div class="label">22 sept 2025</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Oct 2025</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Nov 2025<br>Migration CRM</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Janv 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Mars 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Avril 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Mai 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Juin 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Juil 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">2026-27</div></div>
+          <div class="timeline-line"></div>
+        </div>
+      </div>
+      <div class="content">
+        <span class="eyebrow" data-anim="1">Action 1 sur 3</span>
+        <h2 data-anim="2">Reconquérir la donnée</h2>
+        <div class="detail-grid" style="margin-top:18px;">
+          <div class="detail-list">
+            <div class="item" data-anim="3" data-tilt data-tilt-max="6"><div class="title">Migration Coefficy → HubSpot</div><div class="num" data-count="85000" data-sep="space">85 000</div><div class="body">comptes industrialisés, dédupliqués, segmentés territoire et secteur. Mapping rigoureux des champs (SIRET, code NAF, effectif).</div></div>
+            <div class="item" data-anim="4" data-tilt data-tilt-max="6"><div class="title">Bascule HubSpot → CRM interne</div><div class="num">35 000 + 3 000</div><div class="body">comptes et contacts migrés. Enrichissement automatique via API INSEE, Societe.info et Full Enrich (530 / 714 clients enrichis automatiquement).</div></div>
+            <div class="item" data-anim="5" data-tilt data-tilt-max="6"><div class="title">Workflows et propriétés HubSpot</div><div class="num">ZZZ · NRP · Motifs</div><div class="body">Propriétés codifiées pour sortir un compte du flux en un clic. Motifs de refus structurés pour alimenter le nurturing.</div></div>
+          </div>
+          <div data-anim="6">
+            <h3 style="font-size:22px; color:var(--flame);">Pourquoi c'était critique</h3>
+            <p style="margin-top:14px;">Sans données propres en amont, aucune campagne marketing ne peut être pilotée. La fiabilisation du socle a précédé tous les autres chantiers.</p>
+            <div class="spacer-sm"></div>
+            <p style="font-size:15px; opacity:0.78;"><strong>Friction structurelle identifiée :</strong> double saisie HubSpot / Dynamics Be Cloud, qui masque une partie de la performance commerciale tracée côté revendeur.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ 13. ACTION 2 ═══════════════ -->
+    <section class="slide paper with-timeline" data-step="3">
+      <div class="timeline-strip">
+        <div class="timeline-track">
+          <div class="timeline-step"><div class="dot"></div><div class="label">22 sept 2025</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Oct 2025</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Nov 2025</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Janv 2026<br>1er Blitz Day</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Mars 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Avril 2026<br>Webinaires</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Mai 2026<br>SmartLead</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Juin 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Juil 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">2026-27</div></div>
+          <div class="timeline-line"></div>
+        </div>
+      </div>
+      <div class="content">
+        <span class="eyebrow" data-anim="1">Action 2 sur 3</span>
+        <h2 data-anim="2">Industrialiser l'acquisition</h2>
+        <div class="spacer-sm"></div>
+        <p class="lead" data-anim="3">~1 200 comptes et contacts ciblés produits chaque mois. Stack outils maîtrisée et orchestrée.</p>
+        <div class="stats" style="margin-top:22px;">
+          <div class="stat" data-anim="4" data-tilt data-tilt-max="6"><div class="num" data-count="47.9" data-suffix="%" data-decimals="1">47,9%</div><div class="lbl">Ouverture Lemlist (4 campagnes / 871 prospects)</div></div>
+          <div class="stat" data-anim="5" data-tilt data-tilt-max="6"><div class="num">52-54%</div><div class="lbl">Ouverture SmartLead (premières campagnes)</div></div>
+          <div class="stat" data-anim="6" data-tilt data-tilt-max="6"><div class="num" data-count="5">5</div><div class="lbl">Blitz Days (~60 RDV/journée)</div></div>
+          <div class="stat" data-anim="7" data-tilt data-tilt-max="6"><div class="num" data-count="3">3</div><div class="lbl">Webinaires Factorial (23% conv. inscrits→démos)</div></div>
+          <div class="stat" data-anim="8" data-tilt data-tilt-max="6"><div class="num" data-count="33">33</div><div class="lbl">Actions Demand Gen Factorial planifiées</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ 14. ACTION 3 ═══════════════ -->
+    <section class="slide dark with-timeline" data-step="4">
+      <div class="timeline-strip">
+        <div class="timeline-track">
+          <div class="timeline-step"><div class="dot"></div><div class="label">22 sept 2025</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Oct 2025</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Nov 2025</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Janv 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Mars 2026<br>Growth Hub</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Avril 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Mai 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Juin 2026<br>CRM 70%</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Juil 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">2026-27</div></div>
+          <div class="timeline-line"></div>
+        </div>
+      </div>
+      <div class="content">
+        <span class="eyebrow" data-anim="1">Action 3 sur 3</span>
+        <h2 data-anim="2">Construire l'outil qui manquait</h2>
+        <div class="spacer"></div>
+        <p class="lead" data-anim="3">Initié sur mon temps libre, devenu un livrable structurant. <strong style="color:var(--flame);">Air Cloud Growth Hub.</strong></p>
+        <div class="stats">
+          <div class="stat" data-anim="4" data-tilt data-tilt-max="6"><div class="num" data-count="13">13</div><div class="lbl">Modules (dont 2 en cours : Nurturing, Cimetière)</div></div>
+          <div class="stat" data-anim="5" data-tilt data-tilt-max="6"><div class="num" data-count="5" data-suffix=" APIs">5 APIs</div><div class="lbl">HubSpot · SmartLead · INSEE · Societe.info · Full Enrich</div></div>
+          <div class="stat" data-anim="6" data-tilt data-tilt-max="6"><div class="num">GPT-4o</div><div class="lbl">Génération séquences IA + assistant chat</div></div>
+          <div class="stat" data-anim="7" data-tilt data-tilt-max="6"><div class="num" data-count="17000" data-sep="space">17 000</div><div class="lbl">Lignes de Python (FastAPI)</div></div>
+          <div class="stat" data-anim="8" data-tilt data-tilt-max="6"><div class="num" data-count="157881" data-sep="space">157 881</div><div class="lbl">Entreprises dans la base unifiée</div></div>
+        </div>
+        <p style="margin-top:18px; font-size:15px; opacity:0.75;" data-anim="8">Une preuve concrète qu'on peut, avec du vibe coding et de l'autonomie, construire localement ce que les SaaS facturent plusieurs centaines d'euros par mois.</p>
+      </div>
+    </section>
+
+    <!-- ═══════════════ 15. PREUVES — FUNNEL ═══════════════ -->
+    <section class="slide paper with-timeline" data-step="7">
+      <div class="timeline-strip">
+        <div class="timeline-track">
+          <div class="timeline-step"><div class="dot"></div><div class="label">22 sept 2025</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Oct 2025</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Nov 2025</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Janv 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Mars 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Avril 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Mai 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Juin 2026<br>Bilan</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">Juil 2026</div></div>
+          <div class="timeline-step"><div class="dot"></div><div class="label">2026-27</div></div>
+          <div class="timeline-line"></div>
+        </div>
+      </div>
+      <div class="content">
+        <span class="eyebrow" data-anim="1">Réalisations & preuves</span>
+        <h2 data-anim="2">Le funnel d'acquisition consolidé sur 9 mois</h2>
+        <div class="funnel-wrap">
+          <div class="funnel-col">
+            <div class="funnel-row" data-anim="3" style="--w: 100%; --bg: #1A1B2E;">
+              <div class="funnel-label">
+                <div class="funnel-num">166 800</div>
+                <div class="funnel-tag">Entreprises en base</div>
+              </div>
+              <div class="funnel-bar"></div>
+            </div>
+            <div class="funnel-row" data-anim="4" style="--w: 76%; --bg: #2D2F4D;">
+              <div class="funnel-label">
+                <div class="funnel-num">76 600</div>
+                <div class="funnel-tag">Activées · 46 % de la base</div>
+              </div>
+              <div class="funnel-bar"></div>
+            </div>
+            <div class="funnel-row" data-anim="5" style="--w: 55%; --bg: #4A4D6F;">
+              <div class="funnel-label">
+                <div class="funnel-num">22 500</div>
+                <div class="funnel-tag">Phase Lead HubSpot · 29 % des activées</div>
+              </div>
+              <div class="funnel-bar"></div>
+            </div>
+            <div class="funnel-row" data-anim="6" style="--w: 38%; --bg: #FB8A6E;">
+              <div class="funnel-label">
+                <div class="funnel-num">534</div>
+                <div class="funnel-tag">Dans au moins un deal ouvert</div>
+              </div>
+              <div class="funnel-bar"></div>
+            </div>
+            <div class="funnel-row" data-anim="7" style="--w: 22%; --bg: #FB5237;">
+              <div class="funnel-label">
+                <div class="funnel-num">82</div>
+                <div class="funnel-tag">Clients gagnés sur la période</div>
+              </div>
+              <div class="funnel-bar"></div>
+            </div>
+          </div>
+          <div class="funnel-aside" data-anim="8">
+            <div class="funnel-aside-eyebrow">Précision sur les 82 clients gagnés</div>
+            <div class="funnel-split">
+              <div class="funnel-split-row">
+                <span class="funnel-split-v">75</span>
+                <span class="funnel-split-k">Microsoft · source <strong>Dynamics</strong></span>
+              </div>
+              <div class="funnel-split-row">
+                <span class="funnel-split-v">7</span>
+                <span class="funnel-split-k">Factorial · source <strong>Partner Portal</strong></span>
+              </div>
+            </div>
+            <div class="funnel-note">
+              Côté HubSpot, on n'en compte que 4 du fait de la double saisie. Détail méthodologique et sources complètes en <strong>annexes A2 et A3</strong> du rapport.
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ 16. DASHBOARD ═══════════════ -->
+    <section class="slide paper" data-name="dashboard">
+      <span class="eyebrow" data-anim="1">Résultats · Dashboard macro</span>
+      <h2 data-anim="2">Tableau de bord — Septembre 2025 → juin 2026</h2>
+      <div class="dash">
+
+        <div class="dash-cell" data-anim="3" data-tilt data-tilt-max="6">
+          <div class="title">Position concurrentielle</div>
+          <div class="value">N°1</div>
+          <div class="sub">Air Cloud passé n°1 de l'écosystème Be Cloud (nov. 2025), dépassant Arpeje.</div>
+          <div class="gauge" style="margin-top:auto;">
+            <div class="gauge-track"><div class="gauge-fill green" data-gauge="92"></div></div>
+            <div class="labels"><span>Cible</span><span style="color:var(--green); font-weight:700;">Atteinte</span></div>
+          </div>
+        </div>
+
+        <div class="dash-cell" data-anim="4" data-tilt data-tilt-max="6">
+          <div class="title">Pipeline créé pendant la mission</div>
+          <div class="value" data-count="96" data-suffix=" %">96 %</div>
+          <div class="sub">Sur 624 deals dans le CRM, <strong>602 deals créés depuis septembre 2025</strong>.</div>
+          <div class="gauge">
+            <div class="gauge-track"><div class="gauge-fill" data-gauge="96"></div></div>
+            <div class="labels"><span>Pre-mission (22)</span><span>Mission (602)</span></div>
+          </div>
+        </div>
+
+        <div class="dash-cell" data-anim="5" data-tilt data-tilt-max="6">
+          <div class="title">Deals Microsoft gagnés</div>
+          <div class="value" data-count="75" data-prefix="~">~75</div>
+          <div class="sub">Source Dynamics. HubSpot n'en affiche que 4 du fait de la double saisie.</div>
+          <div class="kpi-mini">
+            <div class="kpi-mini-cell"><div class="v">4</div><div class="k">HubSpot saisis</div></div>
+            <div class="kpi-mini-cell"><div class="v">~75</div><div class="k">Dynamics réels</div></div>
+          </div>
+        </div>
+
+        <div class="dash-cell" data-anim="6" data-tilt data-tilt-max="6">
+          <div class="title">Croissance comparée Be Cloud (fév → nov 2025)</div>
+          <div class="bars" data-bars>
+            <div class="bar-col"><div class="bar" data-h="90"><span class="val">+29,8%</span></div><div class="lbl">Air Cloud</div></div>
+            <div class="bar-col"><div class="bar muted" data-h="22"><span class="val">+5,3%</span></div><div class="lbl">Marché</div></div>
+            <div class="bar-col"><div class="bar muted" data-h="10"><span class="val">-4%</span></div><div class="lbl">Arpeje</div></div>
+            <div class="bar-col"><div class="bar muted" data-h="6"><span class="val">-14%</span></div><div class="lbl">Kaizzen</div></div>
+          </div>
+        </div>
+
+        <div class="dash-cell" data-anim="7" data-tilt data-tilt-max="6">
+          <div class="title">Production mensuelle de comptes et contacts ciblés</div>
+          <div class="value" data-count="1200" data-prefix="~" data-sep="space">~1 200</div>
+          <div class="sub">Sur Air Cloud + Air Cloud RH. Cible problématique : <strong>atteinte</strong>.</div>
+          <div class="gauge">
+            <div class="gauge-track"><div class="gauge-fill green" data-gauge="100"></div></div>
+            <div class="labels"><span>0</span><span style="color:var(--green); font-weight:700;">100% cible</span></div>
+          </div>
+        </div>
+
+        <div class="dash-cell" data-anim="8" data-tilt data-tilt-max="6">
+          <div class="title">Plan Factorial 2026 — exécution</div>
+          <div class="donut-wrapper">
+            <svg class="donut" viewBox="0 0 60 60">
+              <circle class="ring-bg" cx="30" cy="30" r="26" fill="none" stroke-width="8"/>
+              <circle class="ring-fg" cx="30" cy="30" r="26" fill="none" stroke-width="8"
+                      stroke-dasharray="163.36" stroke-dashoffset="163.36"
+                      data-donut="32"
+                      transform="rotate(-90 30 30)"/>
+              <text x="30" y="36" class="label" text-anchor="middle" data-count="32" data-suffix="%">32%</text>
+            </svg>
+            <div class="donut-detail">
+              <strong>~80 démos réalisées sur 249 visées</strong> en 2026 (mi-année). Écart à expliquer en partie par la difficulté à tenir la cadence sur deux entités en parallèle.
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ═══════════════ 17. CE QUE LE TERRAIN M'A APPRIS ═══════════════ -->
+    <section class="slide paper">
+      <span class="eyebrow" data-anim="1">Synthèse du vécu</span>
+      <h2 data-anim="2">Ce que le terrain m'a appris</h2>
+      <p class="lead" data-anim="3" style="max-width: 1100px; margin-top: 14px; opacity:0.85; font-size: clamp(18px, 1.5vw, 22px);">
+        Je suis arrivé avec des ambitions élevées, persuadé qu'on allait tout révolutionner.
+        Neuf mois plus tard, je vois quatre réalités que je n'avais pas anticipées.
+      </p>
+      <div class="lessons-grid">
+        <div class="lesson-card" data-anim="4" data-tilt data-tilt-max="5" data-tilt-glare data-tilt-max-glare="0.08">
+          <div class="lesson-num">Réalité 1</div>
+          <div class="lesson-title">La complexité décisionnelle</div>
+          <div class="lesson-body">On n'est plus dans un bac à sable. Chaque action automatique peut toucher des clients réels, des filiales, des commerciaux. Tout doit s'anticiper. L'incident Factorial IT, où des mails sont partis par erreur sur des comptes filiales, en est la trace.</div>
+        </div>
+        <div class="lesson-card" data-anim="5" data-tilt data-tilt-max="5" data-tilt-glare data-tilt-max-glare="0.08">
+          <div class="lesson-num">Réalité 2</div>
+          <div class="lesson-title">La donnée, chronophage</div>
+          <div class="lesson-body">Enrichissement, qualité de mapping, déduplication. C'est le coût caché du growth, celui qu'on ne voit pas avant d'y être. Une part énorme de mon année est passée à fiabiliser une base que je n'avais pas créée.</div>
+        </div>
+        <div class="lesson-card" data-anim="6" data-tilt data-tilt-max="5" data-tilt-glare data-tilt-max-glare="0.08">
+          <div class="lesson-num">Réalité 3</div>
+          <div class="lesson-title">Le poids des habitudes installées</div>
+          <div class="lesson-body">Air Cloud tourne et croît depuis plusieurs années. Arriver avec un œil neuf et dire « on arrête ça » à des gens qui réussissent demande de la diplomatie. La conviction seule ne suffit pas, il faut prouver et embarquer.</div>
+        </div>
+        <div class="lesson-card" data-anim="7" data-tilt data-tilt-max="5" data-tilt-glare data-tilt-max-glare="0.08">
+          <div class="lesson-num">Réalité 4</div>
+          <div class="lesson-title">Le jonglage multi-structures</div>
+          <div class="lesson-body">Air Cloud, Air Cloud RH, plus les filiales géographiques. Des casquettes différentes, des règles d'attribution différentes, des comptes à éviter pour la prospection. La charge cognitive de basculer en permanence d'un univers à un autre.</div>
+        </div>
+      </div>
+      <div class="lessons-bridge" data-anim="8">
+        Ces quatre réalités structurent précisément les quatre recommandations qui suivent.
+      </div>
+    </section>
+
+    <!-- ═══════════════ 18. RECOMMANDATIONS ═══════════════ -->
+    <section class="slide paper">
+      <span class="eyebrow" data-anim="1">Recommandations · Le plan 2026-2027</span>
+      <h2 data-anim="2">Quatre recommandations qui prolongent le diagnostic</h2>
+      <div class="reco-grid">
+        <div class="reco-img" data-anim="3">
+          <div class="gantt-box">
+            <div class="gantt-months">
+              <span>Juil. 26</span><span>Oct.</span><span>Jan. 27</span><span>Avr.</span><span>Juil.</span><span>Oct.</span><span>Déc. 27</span>
+            </div>
+            <div class="gantt-row">
+              <div class="gantt-row-label">R1 · Donnée invisible</div>
+              <div class="gantt-track">
+                <div class="gantt-bar poc"     style="left: 0%;  width: 12%;"></div>
+                <div class="gantt-bar impl"    style="left: 12%; width: 16%;"></div>
+                <div class="gantt-bar product" style="left: 28%; width: 72%;"></div>
+              </div>
+            </div>
+            <div class="gantt-row">
+              <div class="gantt-row-label">R2 · Changements de poste</div>
+              <div class="gantt-track">
+                <div class="gantt-bar poc"     style="left: 14%; width: 14%;"></div>
+                <div class="gantt-bar impl"    style="left: 28%; width: 18%;"></div>
+                <div class="gantt-bar product" style="left: 46%; width: 54%;"></div>
+              </div>
+            </div>
+            <div class="gantt-row">
+              <div class="gantt-row-label">R3 · Closing-loop attribution</div>
+              <div class="gantt-track">
+                <div class="gantt-bar poc"     style="left: 0%;  width: 16%;"></div>
+                <div class="gantt-bar impl"    style="left: 16%; width: 12%;"></div>
+                <div class="gantt-bar product" style="left: 28%; width: 72%;"></div>
+              </div>
+            </div>
+            <div class="gantt-row">
+              <div class="gantt-row-label">R4 · Binôme junior</div>
+              <div class="gantt-track">
+                <div class="gantt-bar poc"     style="left: 0%;  width: 18%;"></div>
+                <div class="gantt-bar impl"    style="left: 18%; width: 8%;"></div>
+                <div class="gantt-bar product" style="left: 26%; width: 74%;"></div>
+              </div>
+            </div>
+            <div class="gantt-legend">
+              <div class="gantt-legend-item"><span class="dot poc"></span>Cadrage / POC</div>
+              <div class="gantt-legend-item"><span class="dot impl"></span>Implémentation</div>
+              <div class="gantt-legend-item"><span class="dot product"></span>Opération continue</div>
+            </div>
+            <div class="gantt-note">Gantt détaillé en <strong>annexe A4</strong> du rapport.</div>
+          </div>
+        </div>
+        <div class="reco-list">
+          <div class="reco-item" data-anim="4">
+            <div class="reco-num">R1</div>
+            <div class="reco-content">
+              <div class="reco-title">Extraction de la donnée invisible</div>
+              <div class="reco-problem"><span class="reco-tag">Répond à</span> la donnée commerciale enfouie dans les notes HubSpot (274k activités).</div>
+            </div>
+          </div>
+          <div class="reco-item" data-anim="5">
+            <div class="reco-num">R2</div>
+            <div class="reco-content">
+              <div class="reco-title">Détection des changements de poste DSI</div>
+              <div class="reco-problem"><span class="reco-tag">Répond à</span> l'absence de capture des signaux décideurs (déjà prototypée).</div>
+            </div>
+          </div>
+          <div class="reco-item" data-anim="6">
+            <div class="reco-num">R3</div>
+            <div class="reco-content">
+              <div class="reco-title">Closing-loop attribution</div>
+              <div class="reco-problem"><span class="reco-tag">Répond à</span> l'attribution canal-par-canal non instrumentée, arbitrages au feeling.</div>
+            </div>
+          </div>
+          <div class="reco-item" data-anim="7">
+            <div class="reco-num">R4</div>
+            <div class="reco-content">
+              <div class="reco-title">Recrutement d'un binôme junior</div>
+              <div class="reco-problem"><span class="reco-tag">Répond à</span> la sur-sollicitation du growth, cadence Factorial non tenable seul.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ 19. PROTOTYPE DSI — l'année prochaine déjà commencée ═══════════════ -->
+    <section class="slide dark" data-name="dsi">
+      <span class="eyebrow" data-anim="1">De la recommandation à l'exécution</span>
+      <h2 data-anim="2">La Recommandation 2 a déjà un prototype.<br><span style="color:var(--flame);">Cette semaine.</span></h2>
+      <p class="lead" data-anim="3" style="margin-top:18px; opacity:0.85; max-width: 1100px;">Un système automatisé qui détecte les nouveaux DSI / Responsables IT en France, enrichit leurs coordonnées, analyse leur activité LinkedIn récente et génère un opener personnalisé par IA.</p>
+
+      <div class="dsi-pipeline">
+        <div class="dsi-step" data-anim="4">
+          <div class="dsi-num">1</div>
+          <div class="dsi-title">Recherche</div>
+          <div class="dsi-sub">Sales Navigator via Pronto, scope DSI 50-500 salariés FR</div>
+        </div>
+        <div class="dsi-arrow" data-anim="4"></div>
+        <div class="dsi-step" data-anim="4">
+          <div class="dsi-num">2</div>
+          <div class="dsi-title">Ingestion</div>
+          <div class="dsi-sub">Webhook + déduplication automatique, scoring Tier 1/2/3</div>
+        </div>
+        <div class="dsi-arrow" data-anim="5"></div>
+        <div class="dsi-step" data-anim="5">
+          <div class="dsi-num">3</div>
+          <div class="dsi-title">Enrichissement</div>
+          <div class="dsi-sub">Email pro via waterfall 20+ sources, ~60% trouvés vérifiés</div>
+        </div>
+        <div class="dsi-arrow" data-anim="5"></div>
+        <div class="dsi-step" data-anim="6">
+          <div class="dsi-num">4</div>
+          <div class="dsi-title">Matching CRM</div>
+          <div class="dsi-sub">4 stratégies en cascade (LinkedIn, domaine, nom, fuzzy)</div>
+        </div>
+        <div class="dsi-arrow" data-anim="6"></div>
+        <div class="dsi-step" data-anim="6">
+          <div class="dsi-num">5</div>
+          <div class="dsi-title">Signaux LinkedIn</div>
+          <div class="dsi-sub">Posts, commentaires, likes des 7 derniers jours</div>
+        </div>
+        <div class="dsi-arrow" data-anim="7"></div>
+        <div class="dsi-step highlight" data-anim="7">
+          <div class="dsi-num">6</div>
+          <div class="dsi-title">Analyse IA</div>
+          <div class="dsi-sub">Claude résume, identifie le hook actionnable, rédige l'opener RDV</div>
+        </div>
+      </div>
+
+      <div class="dsi-out" data-anim="8">
+        <div class="dsi-out-icon">↓</div>
+        <div class="dsi-out-text">
+          <strong>Digest envoyé automatiquement</strong> par email : cards complètes pour les Tier 1/2 (décideurs et profils à travailler), liste compacte Tier 3, CSV en pièce jointe.
+        </div>
+      </div>
+
+      <p style="margin-top:18px; font-size:14px; opacity:0.6;" data-anim="8">Premier test en cours. Résultats à valider, mais la direction est enthousiaste sur l'angle.</p>
+    </section>
+
+    <!-- ═══════════════ 20. RADAR — bilan de compétences (HTML / SVG) ═══════════════ -->
+    <section class="slide paper">
+      <span class="eyebrow" data-anim="1">Bilan de compétences</span>
+      <h2 data-anim="2">8 compétences clés, avant et après</h2>
+      <div class="radar-wrap">
+        <div class="radar-svg-wrap" data-anim="3">
+          <svg viewBox="0 0 460 400" class="radar-svg" xmlns="http://www.w3.org/2000/svg">
+            <!-- Niveaux concentriques (échelle 1 à 5) -->
+            <g class="radar-grid" stroke="rgba(26,27,46,0.10)" stroke-width="1" fill="none">
+              <polygon points="200,168 222.6,177.4 232,200 222.6,222.6 200,232 177.4,222.6 168,200 177.4,177.4"/>
+              <polygon points="200,136 245.3,154.7 264,200 245.3,245.3 200,264 154.7,245.3 136,200 154.7,154.7"/>
+              <polygon points="200,104 268,131.7 296,200 268,268 200,296 131.7,268 104,200 131.7,131.7"/>
+              <polygon points="200,72  290.5,109.5 328,200 290.5,290.5 200,328 109.5,290.5 72,200 109.5,109.5"/>
+              <polygon points="200,40  313.1,86.9 360,200 313.1,313.1 200,360 86.9,313.1 40,200 86.9,86.9" stroke="rgba(26,27,46,0.18)" stroke-width="1.5"/>
+            </g>
+            <!-- Axes radiaux -->
+            <g class="radar-axes" stroke="rgba(26,27,46,0.12)" stroke-width="1">
+              <line x1="200" y1="200" x2="200" y2="40"/>
+              <line x1="200" y1="200" x2="313.1" y2="86.9"/>
+              <line x1="200" y1="200" x2="360" y2="200"/>
+              <line x1="200" y1="200" x2="313.1" y2="313.1"/>
+              <line x1="200" y1="200" x2="200" y2="360"/>
+              <line x1="200" y1="200" x2="86.9" y2="313.1"/>
+              <line x1="200" y1="200" x2="40" y2="200"/>
+              <line x1="200" y1="200" x2="86.9" y2="86.9"/>
+            </g>
+            <!-- Polygone AVANT (navy) -->
+            <polygon class="radar-before"
+              points="200,168 222.6,177.4 264,200 245.3,245.3 200,264 154.7,245.3 104,200 154.7,154.7"
+              fill="rgba(26,27,46,0.15)" stroke="#1A1B2E" stroke-width="2"/>
+            <g class="radar-before-dots" fill="#1A1B2E">
+              <circle cx="200" cy="168" r="3"/>
+              <circle cx="222.6" cy="177.4" r="3"/>
+              <circle cx="264" cy="200" r="3"/>
+              <circle cx="245.3" cy="245.3" r="3"/>
+              <circle cx="200" cy="264" r="3"/>
+              <circle cx="154.7" cy="245.3" r="3"/>
+              <circle cx="104" cy="200" r="3"/>
+              <circle cx="154.7" cy="154.7" r="3"/>
+            </g>
+            <!-- Polygone APRÈS (flame) -->
+            <polygon class="radar-after"
+              points="200,72 290.5,109.5 328,200 290.5,290.5 200,328 109.5,290.5 72,200 109.5,109.5"
+              fill="rgba(251,82,55,0.18)" stroke="#FB5237" stroke-width="2.5"/>
+            <g class="radar-after-dots" fill="#FB5237">
+              <circle cx="200" cy="72" r="4"/>
+              <circle cx="290.5" cy="109.5" r="4"/>
+              <circle cx="328" cy="200" r="4"/>
+              <circle cx="290.5" cy="290.5" r="4"/>
+              <circle cx="200" cy="328" r="4"/>
+              <circle cx="109.5" cy="290.5" r="4"/>
+              <circle cx="72" cy="200" r="4"/>
+              <circle cx="109.5" cy="109.5" r="4"/>
+            </g>
+            <!-- Labels des axes -->
+            <g class="radar-labels" font-family="GilroyAirCloud, Inter, sans-serif" font-size="11" font-weight="700" fill="#1A1B2E">
+              <text x="200" y="24" text-anchor="middle">Architecture CRM data</text>
+              <text x="335" y="74" text-anchor="middle">Automation n8n · API</text>
+              <text x="372" y="204" text-anchor="start">Lead gen B2B</text>
+              <text x="335" y="334" text-anchor="middle">Dev / vibe coding</text>
+              <text x="200" y="382" text-anchor="middle">Cadrage périmètre</text>
+              <text x="65" y="334" text-anchor="middle">Pivot · adaptation</text>
+              <text x="28" y="204" text-anchor="end">Responsabilité incident</text>
+              <text x="65" y="74" text-anchor="middle">Copywriting · IA</text>
+            </g>
+          </svg>
+        </div>
+        <div class="radar-aside">
+          <div class="radar-legend" data-anim="4">
+            <div class="radar-legend-item">
+              <span class="radar-square before"></span>
+              <div>
+                <div class="radar-legend-k">Avant l'alternance</div>
+                <div class="radar-legend-v">Niveau moyen ~ 1,9 / 5</div>
+              </div>
+            </div>
+            <div class="radar-legend-item">
+              <span class="radar-square after"></span>
+              <div>
+                <div class="radar-legend-k">Après 9 mois</div>
+                <div class="radar-legend-v">Niveau moyen ~ 4 / 5</div>
+              </div>
+            </div>
+          </div>
+          <div class="radar-highlight" data-anim="5">
+            <div class="radar-highlight-eyebrow">Progression la plus marquante</div>
+            <div class="radar-highlight-title">Dev / vibe coding</div>
+            <div class="radar-highlight-body">De 2 à 4 sur 5. 17 000 lignes de Python, 5 APIs intégrées, GPT-4o en production. C'est cette compétence qui rend le profil hybride crédible.</div>
+          </div>
+          <div class="radar-note" data-anim="6">Détail des 8 compétences et exemples concrets en <strong>annexe A5</strong> du rapport.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ 20. PROJECTION ═══════════════ -->
+    <section class="slide dark">
+      <span class="eyebrow" data-anim="1">Et après ?</span>
+      <h2 data-anim="2">Année 2 : moins de volume, plus de qualité, plus de proximité.</h2>
+      <div class="spacer-lg"></div>
+      <div class="two-cols">
+        <div data-anim="3">
+          <h3 style="color:var(--flame); margin-bottom:14px;">Côté école</h3>
+          <p>MBA spécialisé en marketing digital à l'<strong>ISEG Strasbourg</strong>, en parallèle de la 2ᵉ année d'alternance.</p>
+        </div>
+        <div data-anim="4">
+          <h3 style="color:var(--flame); margin-bottom:14px;">Côté Air Cloud</h3>
+          <p>Pilotage des leads entrants pré-qualifiés (lead magnets, signaux, intent data), dashboard d'attribution, et accompagnement plus proche de l'équipe commerciale.</p>
+        </div>
+      </div>
+      <div class="spacer-lg"></div>
+      <p class="lead" style="opacity:0.9;" data-anim="5">À horizon 3 ans, devenir un profil <em style="color:var(--flame);">hybride growth + commercial</em>, capable de tenir toute la chaîne de l'acquisition à la fidélisation.</p>
+    </section>
+
+    <!-- ═══════════════ 21. MOMENT ANCRÉ ═══════════════ -->
+    <section class="slide quote">
+      <span class="eyebrow" style="display:block; text-align:center; margin-bottom:18px;" data-anim="1">Le moment ancré</span>
+      <div class="quote-text" data-anim="2">
+        Le jour où Carla m'a dit qu'elle avait signé un de mes leads,<br>
+        le travail abstrait s'est matérialisé en chiffre d'affaires<br>
+        pour une personne que je connais.
+      </div>
+      <div class="by" data-anim="3">C'est ce qui ancre la conviction métier.</div>
+    </section>
+
+    <!-- ═══════════════ 22. MERCI ═══════════════ -->
+    <section class="slide dark" style="align-items:center; justify-content:center; text-align:center;">
+      <h1 style="font-size: clamp(80px, 10vw, 160px); color: var(--flame);" data-anim="1">Merci.</h1>
+      <div class="spacer"></div>
+      <p class="lead" style="opacity:0.85;" data-anim="2">Place à vos questions.</p>
+    </section>
+
+  </div>
+
+  <!-- Mini-frise du plan : indique où on est dans le déroulé -->
+  <div class="plan-strip" id="planStrip">
+    <div class="plan-step" data-step="1"><span class="step-dot"></span><span class="step-label">Contexte</span></div>
+    <div class="plan-step" data-step="2"><span class="step-dot"></span><span class="step-label">Diagnostic</span></div>
+    <div class="plan-step" data-step="3"><span class="step-dot"></span><span class="step-label">Problématique</span></div>
+    <div class="plan-step" data-step="4"><span class="step-dot"></span><span class="step-label">Plan d'action</span></div>
+    <div class="plan-step" data-step="5"><span class="step-dot"></span><span class="step-label">Détails</span></div>
+    <div class="plan-step" data-step="6"><span class="step-dot"></span><span class="step-label">Preuves & résultats</span></div>
+    <div class="plan-step" data-step="7"><span class="step-dot"></span><span class="step-label">Recos 2026-27</span></div>
+    <div class="plan-step" data-step="8"><span class="step-dot"></span><span class="step-label">Bilan</span></div>
+  </div>
+
+  <div class="progress"><div class="bar" id="bar" style="width: 0%"></div></div>
+  <div class="counter"><span class="current" id="cur">1</span>&nbsp;/&nbsp;<span id="total">22</span></div>
+  <div class="hint">↓ ↑ pour naviguer · F plein écran</div>
+</div>
+
+<script>
+/* ═══════════════ DECK CORE ═══════════════ */
+(function () {
+  const slides = document.querySelectorAll('.slide');
+  const slidesEl = document.getElementById('slides');
+  const bar = document.getElementById('bar');
+  const cur = document.getElementById('cur');
+  const total = document.getElementById('total');
+  total.textContent = slides.length;
+
+  let i = 0;
+
+  // Mapping slide index → section du plan (1-8). null = pas de frise.
+  const SLIDE_SECTION = {
+    3: 1,   // Contexte
+    4: 2, 5: 2, 6: 2,    // Diagnostic
+    7: 3,                // Problématique
+    8: 4, 9: 4,          // Plan d'action
+    10: 5, 11: 5, 12: 5, 13: 5,  // Détails
+    14: 6, 15: 6, 16: 6, // Preuves & résultats
+    17: 7, 18: 7,        // Recos
+    19: 8, 20: 8         // Bilan
+    // Les autres slides (cover, pitch, sommaire, moment, merci) → pas de frise
+  };
+
+  function updatePlanStrip(idx) {
+    const planSteps = document.querySelectorAll('.plan-step');
+    const section = SLIDE_SECTION[idx];
+    if (!section) {
+      document.body.classList.add('plan-hidden');
+      planSteps.forEach(s => s.classList.remove('is-active','is-past'));
+      return;
+    }
+    document.body.classList.remove('plan-hidden');
+    planSteps.forEach(s => {
+      const step = parseInt(s.dataset.step, 10);
+      s.classList.toggle('is-active', step === section);
+      s.classList.toggle('is-past', step < section);
+    });
+  }
+
+  function activate(idx) {
+    slides.forEach((s, k) => {
+      s.classList.toggle('is-active', k === idx);
+      s.classList.toggle('is-prev', k === idx - 1);
+      s.classList.toggle('is-next', k === idx + 1);
+    });
+    const slide = slides[idx];
+    // Adapter le style de la mini-frise selon fond du slide
+    document.body.classList.toggle('dark-plan', slide.classList.contains('dark') || slide.classList.contains('flame'));
+    // Masquer la plan-strip quand on a déjà la timeline-strip chronologique
+    document.body.classList.toggle('plan-hidden-by-timeline', slide.classList.contains('with-timeline'));
+    updatePlanStrip(idx);
+
+    // Compteurs animés (CountUp)
+    slide.querySelectorAll('[data-count]').forEach(el => {
+      const target = parseFloat(el.dataset.count);
+      const decimals = parseInt(el.dataset.decimals || '0', 10);
+      const suffix = el.dataset.suffix || '';
+      const prefix = el.dataset.prefix || '';
+      const sep = el.dataset.sep === 'space' ? ' ' : '';
+      const opts = { duration: 1.4, decimalPlaces: decimals, suffix, prefix, separator: sep, decimal: ',' };
+      try {
+        const cu = new countUp.CountUp(el, target, opts);
+        if (!cu.error) cu.start();
+      } catch (e) { /* silent */ }
+    });
+
+    // Jauges horizontales
+    slide.querySelectorAll('[data-gauge]').forEach(el => {
+      const pct = parseFloat(el.dataset.gauge);
+      el.style.width = '0%';
+      requestAnimationFrame(() => {
+        gsap.to(el, { width: pct + '%', duration: 1.2, ease: 'power3.out', delay: 0.3 });
+      });
+    });
+
+    // Bar chart (dashboard)
+    slide.querySelectorAll('[data-bars] .bar').forEach((bar, k) => {
+      const h = parseFloat(bar.dataset.h);
+      bar.style.height = '0%';
+      gsap.to(bar, { height: h + '%', duration: 1.0, ease: 'power3.out', delay: 0.35 + k * 0.08 });
+    });
+
+    // Donut
+    slide.querySelectorAll('[data-donut]').forEach(el => {
+      const pct = parseFloat(el.dataset.donut);
+      const dash = 163.36;
+      const offset = dash * (1 - pct / 100);
+      el.style.strokeDashoffset = dash;
+      requestAnimationFrame(() => {
+        gsap.to(el, { attr: { 'stroke-dashoffset': offset }, duration: 1.4, ease: 'power3.out', delay: 0.4 });
+      });
+    });
+
+    // Frise step
+    const step = slide.dataset.step;
+    if (step !== undefined) {
+      const steps = slide.querySelectorAll('.timeline-step');
+      const idx2 = parseInt(step, 10);
+      steps.forEach((s, k) => {
+        s.classList.remove('active', 'past');
+        if (k < idx2) s.classList.add('past');
+        else if (k === idx2) s.classList.add('active');
+      });
+    }
+  }
+
+  function go(n) {
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slidesEl.style.transform = `translateY(-${i * 100}vh)`;
+    cur.textContent = i + 1;
+    bar.style.width = ((i + 1) / slides.length * 100) + '%';
+    activate(i);
+    history.replaceState(null, '', '#' + (i + 1));
+  }
+
+  const initial = parseInt(location.hash.replace('#', ''), 10);
+  if (!isNaN(initial) && initial >= 1 && initial <= slides.length) go(initial - 1);
+  else go(0);
+
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowDown', 'ArrowRight', ' ', 'PageDown'].includes(e.key)) { e.preventDefault(); go(i + 1); }
+    if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(i - 1); }
+    if (e.key === 'Home') { e.preventDefault(); go(0); }
+    if (e.key === 'End')  { e.preventDefault(); go(slides.length - 1); }
+    if (e.key === 'f' || e.key === 'F') {
+      e.preventDefault();
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+  });
+
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('a, button, #sunburst, .sunburst-tooltip')) return;
+    const w = window.innerWidth;
+    if (e.clientX > w / 2) go(i + 1); else go(i - 1);
+  });
+
+  let touchStart = null;
+  window.addEventListener('touchstart', (e) => { touchStart = e.touches[0].clientY; });
+  window.addEventListener('touchend', (e) => {
+    if (touchStart === null) return;
+    const dy = e.changedTouches[0].clientY - touchStart;
+    if (Math.abs(dy) > 60) { if (dy < 0) go(i + 1); else go(i - 1); }
+    touchStart = null;
+  });
+
+  window.addEventListener('resize', () => go(i));
+
+  /* ═══════════════ TILT ═══════════════ */
+  if (window.VanillaTilt) {
+    VanillaTilt.init(document.querySelectorAll('[data-tilt]'), {
+      max: 6, speed: 600, glare: false, perspective: 1200, scale: 1.02
+    });
+  }
+
+  /* ═══════════════ SUNBURST V3 — rotation sur place + révélation auto par curseur ═══════════════ */
+  function initSunburst() {
+    const container = document.getElementById('sunburst');
+    const panel = document.getElementById('diagPanel');
+    if (!container || !window.d3) return;
+    // S'assurer qu'il n'y a qu'un seul SVG (vider sans toucher au curseur)
+    container.querySelectorAll('svg.sb-main').forEach(el => el.remove());
+
+    const ALL = [
+      // SWOT — anneau intérieur
+      { id:"forces",   group:"swot",   kind:"positive", name:"Forces (interne)",          short:"FORCES",         detail:"Partenariat Microsoft solide, croissance +41,7 %, churn 0,91 %, méthodologie de delivery standardisée, fidélisation client exceptionnelle." },
+      { id:"oppo",     group:"swot",   kind:"positive", name:"Opportunités (marché)",     short:"OPPORTU.",       detail:"Adoption massive de l'IA (Copilot), entrée en vigueur NIS2, diversification réussie via Factorial, recomposition de l'écosystème Be Cloud." },
+      { id:"faibl",    group:"swot",   kind:"negative", name:"Faiblesses (interne)",      short:"FAIBLESSES",     detail:"Marketing growth peu structuré au démarrage, dépendance forte à l'écosystème Microsoft, pilotage data incomplet sur certaines étapes du funnel." },
+      { id:"menaces",  group:"swot",   kind:"negative", name:"Menaces (marché)",          short:"MENACES",        detail:"Concurrence prix sur le segment PME, pression des grands intégrateurs nationaux sur les ETI, évolution possible des conditions commerciales Microsoft." },
+      // PESTEL — anneau extérieur
+      { id:"pol",      group:"pestel", kind:"neutral",  name:"Politique",                 short:"POLITIQUE",      detail:"Souveraineté numérique européenne et française, dispositif France Num, rôle de l'État dans la commande publique cloud." },
+      { id:"eco",      group:"pestel", kind:"neutral",  name:"Économique",                short:"ÉCONO.",         detail:"Marché cloud français de 27 Md€ en 2025, croissance à deux chiffres. Pression budgétaire IT côté PME, qui pousse à optimiser plutôt qu'à élargir." },
+      { id:"soc",      group:"pestel", kind:"neutral",  name:"Social",                    short:"SOCIAL",         detail:"Télétravail durablement installé dans les PME, besoin permanent d'outils de collaboration cloud. Montée des compétences numériques." },
+      { id:"techno",   group:"pestel", kind:"positive", name:"Technologique (IA)",        short:"TECHNO · IA",    detail:"Intégration de l'IA dans Microsoft 365 via Copilot et les agents. 73 % des dirigeants français voient 2025 comme une année pivot pour transformer leur organisation grâce à l'IA." },
+      { id:"env",      group:"pestel", kind:"neutral",  name:"Environnemental / RSE",     short:"ENV · RSE",      detail:"Pression sur l'empreinte carbone des datacenters, exigences RSE en cascade des grands donneurs d'ordre. Barrière à l'entrée renforcée mais opportunité de différenciation." },
+      { id:"legal",    group:"pestel", kind:"positive", name:"Légal (NIS2)",              short:"LÉGAL · NIS2",   detail:"Directive NIS2 (transposition été 2026 en France), plus de 15 000 entités concernées. Opportunité commerciale directe via le Pack Sécurité Air Cloud à 1 980 € HT." },
+    ];
+
+    const SWOT_ORDER  = ["forces", "oppo", "faibl", "menaces"];
+    const PESTEL_ORDER = ["pol", "eco", "soc", "techno", "env", "legal"];
+
+    const swot   = SWOT_ORDER.map(id => ALL.find(d => d.id === id));
+    const pestel = PESTEL_ORDER.map(id => ALL.find(d => d.id === id));
+
+    const rect = container.getBoundingClientRect();
+    const size = Math.min(rect.width, rect.height);
+    const W = size, H = size;
+    const radius = Math.min(W, H) / 2 - 4;
+    const swotInner    = radius * 0.28;
+    const swotOuter    = radius * 0.60;
+    const pestelInner  = radius * 0.62;
+    const pestelOuter  = radius * 0.97;
+    const centerRadius = radius * 0.26;
+
+    const colorFlame = "#FB5237";
+    const colorRed   = "#D8412C";
+    const colorNavy  = "#1A1B2E";
+
+    const fillFor = d => d.kind === "positive" ? colorFlame
+                       : d.kind === "negative" ? colorRed : colorNavy;
+
+    const svg = d3.select(container).append("svg")
+      .attr("class", "sb-main")
+      .attr("viewBox", `${-W/2} ${-H/2} ${W} ${H}`)
+      .attr("preserveAspectRatio", "xMidYMid meet")
+      .attr("width", "100%")
+      .attr("height", "100%");
+
+    // Defs : gradients radiaux pour donner de la profondeur
+    const defs = svg.append("defs");
+    [
+      { id:"gradFlame", c:"#FF7F66", c2:"#C73E29" },
+      { id:"gradRed",   c:"#E66652", c2:"#A92E1D" },
+      { id:"gradNavy",  c:"#3D3F5C", c2:"#13142A" },
+    ].forEach(g => {
+      const lg = defs.append("linearGradient").attr("id", g.id).attr("x1","0%").attr("y1","0%").attr("x2","100%").attr("y2","100%");
+      lg.append("stop").attr("offset","0%").attr("stop-color", g.c);
+      lg.append("stop").attr("offset","100%").attr("stop-color", g.c2);
+    });
+    const gradFor = d => d.kind === "positive" ? "url(#gradFlame)"
+                       : d.kind === "negative" ? "url(#gradRed)" : "url(#gradNavy)";
+
+    // Glow filter pour le segment actif
+    const filter = defs.append("filter").attr("id","glow").attr("x","-50%").attr("y","-50%").attr("width","200%").attr("height","200%");
+    filter.append("feGaussianBlur").attr("stdDeviation","6").attr("result","coloredBlur");
+    const feMerge = filter.append("feMerge");
+    feMerge.append("feMergeNode").attr("in","coloredBlur");
+    feMerge.append("feMergeNode").attr("in","SourceGraphic");
+
+    // Rotor (groupe qui tourne lentement)
+    const rotor = svg.append("g").attr("class","sb-rotor");
+
+    const pie = d3.pie().value(() => 1).sort(null);
+    const swotArc   = d3.arc().innerRadius(swotInner).outerRadius(swotOuter).padAngle(0.018).cornerRadius(4);
+    const pestelArc = d3.arc().innerRadius(pestelInner).outerRadius(pestelOuter).padAngle(0.020).cornerRadius(4);
+
+    const swotData   = pie(swot);
+    const pestelData = pie(pestel);
+
+    const allArcs = []; // pour mass dim
+    const allLabels = [];
+
+    function drawArcs(parent, dataArr, arcGen, ringName) {
+      const arcs = parent.selectAll(null).data(dataArr).enter().append("g").attr("class","sb-arc-grp");
+
+      arcs.append("path")
+        .attr("class","sb-arc")
+        .attr("data-id", d => d.data.id)
+        .attr("d", d => arcGen({ ...d, endAngle: d.startAngle }))
+        .attr("fill", d => gradFor(d.data))
+        .each(function(d, k) {
+          allArcs.push({ el: this, d: d, arcGen, ring: ringName });
+          d3.select(this).transition().duration(950).delay(200 + k * 90)
+            .ease(d3.easeCubicOut)
+            .attrTween("d", function() {
+              const interp = d3.interpolate(d.startAngle, d.endAngle);
+              return t => arcGen({ ...d, endAngle: interp(t) });
+            });
+        })
+        .on("click", function(event, d) {
+          event.stopPropagation();
+          // Lock sur ce segment (la roue ne tourne plus tant qu'on clique pas ailleurs)
+          if (typeof lockSegment === "function") lockSegment(d.data);
+        });
+
+      arcs.append("text")
+        .attr("class","sb-label")
+        .attr("transform", d => {
+          const [x, y] = arcGen.centroid(d);
+          let angle = (d.startAngle + d.endAngle) / 2 * 180 / Math.PI - 90;
+          if (angle > 90 && angle < 270) angle += 180;
+          return `translate(${x},${y}) rotate(${angle})`;
+        })
+        .attr("text-anchor","middle")
+        .attr("dy","0.34em")
+        .attr("font-size", ringName === "swot" ? Math.max(11, radius * 0.038) : Math.max(10, radius * 0.034))
+        .attr("opacity", 0)
+        .text(d => d.data.short)
+        .each(function(d) { allLabels.push({ el: this, id: d.data.id }); })
+        .transition().duration(450).delay(1150)
+        .attr("opacity", 1);
+    }
+
+    drawArcs(rotor, swotData,   swotArc,   "swot");
+    drawArcs(rotor, pestelData, pestelArc, "pestel");
+
+    // Centre Air Cloud — placé DIRECTEMENT dans le svg (hors rotor) pour qu'il reste droit
+    const center = svg.append("g").attr("class","sb-center-group").attr("opacity", 0);
+    center.append("circle")
+      .attr("r", centerRadius)
+      .attr("fill","#FFFFFF")
+      .attr("stroke", colorFlame)
+      .attr("stroke-width", 3)
+      .attr("filter","drop-shadow(0 8px 24px rgba(26,27,46,0.15))");
+
+    center.append("text").attr("class","sb-center").attr("y", -centerRadius*0.10)
+      .attr("font-size", centerRadius * 0.32).attr("font-weight", 900).text("AIR CLOUD");
+    center.append("text").attr("class","sb-center").attr("y", centerRadius*0.18)
+      .attr("font-size", centerRadius * 0.18).attr("font-weight", 700).attr("fill", colorFlame).text("le micro");
+    center.append("text").attr("class","sb-center").attr("y", centerRadius*0.42)
+      .attr("font-size", centerRadius * 0.13).attr("opacity", 0.65).text("Partenaire Microsoft · PME");
+
+    center.on("click", function(event) {
+      event.stopPropagation();
+      resetSelection();
+    });
+
+    center.transition().duration(700).delay(1500).attr("opacity", 1);
+
+    // Helpers : trouver le segment au top en fonction de la rotation
+    // En SVG D3, angle 0 rad = haut (12h), sens horaire. Quand le rotor tourne de +rot rad,
+    // le point sous le curseur (au top) correspond à l'angle (-rot) mod 2π dans le repère original du rotor.
+    const TWO_PI = Math.PI * 2;
+    const allSegments = [...swotData, ...pestelData].map(d => ({
+      data: d.data, startAngle: d.startAngle, endAngle: d.endAngle, ring: d.data.group
+    }));
+    function segmentAtTop(rotRad) {
+      // Retourne les segments des DEUX couronnes (SWOT et PESTEL) au top
+      let target = ((-rotRad) % TWO_PI + TWO_PI) % TWO_PI;
+      const result = { swot: null, pestel: null };
+      for (const s of allSegments) {
+        if (s.startAngle <= target && target < s.endAngle) {
+          result[s.ring] = s.data;
+        }
+      }
+      return result;
+    }
+
+    // Sauvegarder le panel par défaut (vue d'ensemble)
+    const panelDefault = panel.innerHTML;
+
+    let currentTopKey = null;   // clé combinée (swotId|pestelId) pour comparer
+    let isHovered = false;
+    let lockedId = null;
+
+    function highlight(ids) {
+      // ids = Set | Array | null. Si null, tout en mode normal.
+      const set = ids ? new Set(Array.isArray(ids) ? ids : [ids]) : null;
+      allArcs.forEach(a => {
+        const isActive = set ? set.has(a.d.data.id) : false;
+        d3.select(a.el)
+          .classed("active", isActive)
+          .classed("dim", set && !isActive)
+          .attr("filter", isActive ? "url(#glow)" : null);
+      });
+      allLabels.forEach(l => d3.select(l.el).classed("dim", set && !set.has(l.id)));
+    }
+
+    function renderCard(item) {
+      if (!item) {
+        return `
+          <div class="diag-card empty">
+            <div class="panel-eyebrow">— Pas de segment au curseur</div>
+          </div>`;
+      }
+      const grpLabel = item.group === "swot" ? "SWOT · Diagnostic interne" : "PESTEL · Diagnostic macro";
+      const tagClass = item.kind === "positive" ? "flame" : item.kind === "negative" ? "red" : "navy";
+      const tagText  = item.kind === "positive" ? "Levier ou opportunité"
+                     : item.kind === "negative" ? "Faiblesse ou menace" : "Tendance de marché";
+      return `
+        <div class="diag-card">
+          <div class="panel-eyebrow">${grpLabel}</div>
+          <span class="panel-tag ${tagClass}">${tagText}</span>
+          <h3 class="panel-title">${item.name}</h3>
+          <p class="panel-text">${item.detail}</p>
+        </div>
+      `;
+    }
+
+    function updatePanel(swotItem, pestelItem) {
+      // Si rien à afficher, revenir à la vue d'ensemble par défaut
+      if (!swotItem && !pestelItem) { panel.innerHTML = panelDefault; return; }
+      panel.innerHTML = `
+        <div class="panel-state diag-cards-stack">
+          ${renderCard(swotItem)}
+          ${renderCard(pestelItem)}
+        </div>
+      `;
+    }
+
+    // Rotation lente continue + détection auto
+    let rotation = 0;
+    let lastTime = performance.now();
+    function tick(now) {
+      const dt = now - lastTime;
+      lastTime = now;
+      if (!isHovered && !lockedId) {
+        rotation += dt * 0.00009; // 1 tour ≈ 70 secondes
+        rotor.attr("transform", `rotate(${rotation * 180 / Math.PI})`);
+
+        // Détecter les deux segments au top (SWOT + PESTEL)
+        const top = segmentAtTop(rotation);
+        const key = (top.swot?.id || '-') + '|' + (top.pestel?.id || '-');
+        if (key !== currentTopKey) {
+          currentTopKey = key;
+          const ids = [top.swot?.id, top.pestel?.id].filter(Boolean);
+          highlight(ids.length ? ids : null);
+          updatePanel(top.swot, top.pestel);
+        }
+      }
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+
+    // Hover sur un segment : pause + highlight + panneau (le segment + son équivalent au top de l'autre couronne)
+    allArcs.forEach(a => {
+      d3.select(a.el)
+        .on("mouseenter", function() {
+          isHovered = true;
+          const item = a.d.data;
+          highlight([item.id]);
+          // Afficher uniquement le segment survolé dans sa colonne
+          if (item.group === "swot") updatePanel(item, null);
+          else updatePanel(null, item);
+        })
+        .on("mouseleave", function() {
+          isHovered = false;
+          currentTopKey = null; // forcer le tick à rerendre
+        });
+    });
+
+    // Verrouiller sur un segment (au clic)
+    function lockSegment(item) {
+      lockedId = item.id;
+      highlight([item.id]);
+      if (item.group === "swot") updatePanel(item, null);
+      else updatePanel(null, item);
+    }
+
+    // Clic sur le centre = reset
+    svg.select(".sb-center-group").on("click", function(event) {
+      event.stopPropagation();
+      lockedId = null;
+      isHovered = false;
+      currentTopKey = null;
+      highlight(null);
+      updatePanel(null, null);
+    });
+
+    // Clic ailleurs sur le SVG (zone vide) = reset aussi
+    svg.on("click", function(event) {
+      if (event.target.tagName === "svg") {
+        lockedId = null;
+        isHovered = false;
+        currentTopKey = null;
+        highlight(null);
+        updatePanel(null, null);
+      }
+    });
+  }
+
+  // Init sunburst quand le DOM est prêt
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSunburst);
+  } else {
+    initSunburst();
+  }
+
+  let resizeT;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeT);
+    resizeT = setTimeout(initSunburst, 200);
+  });
+
+})();
+</script>
+
+</body>
+</html>
