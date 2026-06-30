@@ -410,7 +410,10 @@
                 
                 <div class="content-container">
                     <div class="slide-up">
-                        <span class="text-secondary font-bold tracking-[0.3em] uppercase text-sm mb-6 block">01 — L'entreprise</span>
+                        <span class="text-secondary font-bold tracking-[0.3em] uppercase text-sm mb-6 flex items-center gap-4">
+                            01 — L'entreprise
+                            <img src="images/LogoBlancTransparent.png" class="h-6 object-contain opacity-80" alt="Logo My Sport Session" onerror="this.style.display='none'">
+                        </span>
                         <h1 class="text-white text-[5rem] font-black leading-[1.1] mb-16 tracking-tight">My Sport Session en 2025</h1>
                     </div>
                     
@@ -423,7 +426,7 @@
                                 Après 6 ans d'existence, le système de réservation sur <strong>abonnement pur</strong> montre ses limites et ne génère pas assez de CA pour soutenir la structure.
                             </p>
                         </div>
-                        <div class="col-span-7 flex flex-col gap-6">
+                        <div class="col-span-7 flex flex-col gap-6 fragment">
                             <div class="flex gap-6">
                                 <div class="flex-1 bg-white/10 backdrop-blur-md border border-white/20 p-8 rounded-[2rem] flex flex-col items-center justify-center transform hover:scale-105 transition-transform duration-300">
                                     <div class="text-[4rem] font-black text-white mb-1 leading-none"><span class="js-counter" data-target="41">0</span></div>
@@ -2097,26 +2100,13 @@
                 if (timerContainer) timerContainer.style.color = '#a3a3a3';
 
                 // Animation des compteurs JS si présents
-                const counters = slides[currentSlide].querySelectorAll('.js-counter');
-                if (counters.length > 0) {
-                    counters.forEach(counter => {
-                        counter.innerText = '0'; // reset
-                        const target = parseInt(counter.getAttribute('data-target'));
-                        const duration = 1500; // ms
-                        const startTime = performance.now();
-                        const animate = (currentTime) => {
-                            const elapsed = currentTime - startTime;
-                            const progress = Math.min(elapsed / duration, 1);
-                            const easeProgress = 1 - Math.pow(1 - progress, 4); // easeOutQuart
-                            counter.innerText = Math.round(easeProgress * target);
-                            if (progress < 1) {
-                                requestAnimationFrame(animate);
-                            } else {
-                                counter.innerText = target;
-                            }
-                        };
-                        setTimeout(() => requestAnimationFrame(animate), 500); // 500ms delay to let the slide transition finish
-                    });
+                const allCounters = slides[currentSlide].querySelectorAll('.js-counter');
+                const countersToRun = Array.from(allCounters).filter(c => {
+                    const fragmentParent = c.closest('.fragment');
+                    return !fragmentParent || fragmentParent.classList.contains('visible');
+                });
+                if (countersToRun.length > 0) {
+                    window.runCounters(countersToRun, 500);
                 }
                 
                 // Démarrer le chronomètre à la 2ème slide (index 1)
@@ -2202,10 +2192,36 @@
                 });
             }
 
+            // Fonction d'animation des compteurs
+            window.runCounters = function(counters, delay = 100) {
+                if (!counters || counters.length === 0) return;
+                counters.forEach(counter => {
+                    counter.innerText = '0'; // reset
+                    const target = parseInt(counter.getAttribute('data-target'));
+                    const duration = 1500; // ms
+                    const startTime = performance.now();
+                    const animate = (currentTime) => {
+                        const elapsed = currentTime - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        const easeProgress = 1 - Math.pow(1 - progress, 4);
+                        counter.innerText = Math.round(easeProgress * target);
+                        if (progress < 1) {
+                            requestAnimationFrame(animate);
+                        } else {
+                            counter.innerText = target;
+                        }
+                    };
+                    setTimeout(() => requestAnimationFrame(animate), delay);
+                });
+            };
+
             function nextStep() {
                 const currentFragments = slides[currentSlide].querySelectorAll('.fragment');
                 if (currentFragmentIndex < currentFragments.length) {
-                    currentFragments[currentFragmentIndex].classList.add('visible');
+                    const fragment = currentFragments[currentFragmentIndex];
+                    fragment.classList.add('visible');
+                    const counters = fragment.querySelectorAll('.js-counter');
+                    window.runCounters(counters, 100);
                     currentFragmentIndex++;
                 } else {
                     goToSlide(currentSlide + 1);
